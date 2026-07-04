@@ -79,6 +79,15 @@ go install ./cmd/*
 For more tools and Acme integration, see [rjkroege/go: Packages and commands for using Plan 9 from Go](https://github.com/rjkroege/go). In particular, use that
 package's `editinacme` as `EDITOR`.
 
+# Contributing
+
+Run `presub.sh` before pushing; it checks formatting, vet, spelling, and
+staticcheck. Install it as a git pre-push hook so it runs automatically:
+
+```sh
+cp presub.sh .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+```
+
 # Roadmap
 
 * More idiomatic Go and tests.
