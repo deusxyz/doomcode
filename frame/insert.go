@@ -7,10 +7,11 @@ import (
 	"unicode/utf8"
 )
 
-func (frame *frameimpl) addifnonempty(box *frbox, inby []byte) *frbox {
+func (frame *frameimpl) addifnonempty(box *frbox, inby []byte, style uint8) *frbox {
 	if box == nil {
 		return &frbox{
-			Ptr: inby,
+			Ptr:   inby,
+			Style: style,
 		}
 	}
 
@@ -18,15 +19,19 @@ func (frame *frameimpl) addifnonempty(box *frbox, inby []byte) *frbox {
 		box.Wid = frame.font.BytesWidth(box.Ptr)
 		frame.box = append(frame.box, box)
 		return &frbox{
-			Ptr: inby,
+			Ptr:   inby,
+			Style: style,
 		}
 	}
+	box.Style = style
 	return nil
 }
 
 // bxscan divides inby into single-line, nl and tab boxes. bxscan assumes that
 // it has ownership of inby
-func (f *frameimpl) bxscan(inby []byte, p, bn int) (image.Point, image.Point, *frameimpl) {
+// styles, if not nil, holds one style index per rune of inby; boxes are
+// also split where the style changes.
+func (f *frameimpl) bxscan(inby []byte, styles []uint8, p, bn int) (image.Point, image.Point, *frameimpl) {
 	frame := &frameimpl{
 		rect:              f.rect,
 		display:           f.display,
@@ -40,6 +45,7 @@ func (f *frameimpl) bxscan(inby []byte, p, bn int) (image.Point, image.Point, *f
 
 	// TODO(rjk): This is probably unnecessary.
 	copy(frame.cols[:], f.cols[:])
+	frame.styles = f.styles
 
 	nl := 0
 
@@ -52,45 +58,57 @@ func (f *frameimpl) bxscan(inby []byte, p, bn int) (image.Point, image.Point, *f
 		if nl > f.maxlines {
 			break
 		}
+		var st uint8
+		if frame.nchars < len(styles) {
+			st = styles[frame.nchars]
+		}
 
 		switch inby[i] {
 		case '\t':
-			wipbox = frame.addifnonempty(wipbox, inby[i+1:i+1])
+			wipbox = frame.addifnonempty(wipbox, inby[i+1:i+1], st)
 
 			frame.box = append(frame.box, &frbox{
 				Bc:     '\t',
 				Wid:    10000,
 				Minwid: byte(frame.font.StringWidth(" ")),
 				Nrune:  -1,
+				Style:  st,
 			})
 
 			i++
 		case '\n':
-			wipbox = frame.addifnonempty(wipbox, inby[i+1:i+1])
+			wipbox = frame.addifnonempty(wipbox, inby[i+1:i+1], st)
 
 			frame.box = append(frame.box, &frbox{
 				Bc:     '\n',
 				Wid:    10000,
 				Minwid: 0,
 				Nrune:  -1,
+				Style:  st,
 			})
 
 			i++
 			nl++
 		default:
 			_, n := utf8.DecodeRune(inby[i:])
+			if wipbox != nil && len(wipbox.Ptr) > 0 && wipbox.Style != st {
+				// A style boundary ends the box in progress.
+				wipbox = frame.addifnonempty(wipbox, inby[i:i], st)
+			}
 			if wipbox == nil {
 				wipbox = &frbox{
-					Ptr: inby[i : i+n],
+					Ptr:   inby[i : i+n],
+					Style: st,
 				}
 			} else {
 				wipbox.Ptr = wipbox.Ptr[:len(wipbox.Ptr)+n]
+				wipbox.Style = st
 			}
 			wipbox.Nrune++
 			i += n
 		}
 	}
-	frame.addifnonempty(wipbox, []byte{})
+	frame.addifnonempty(wipbox, []byte{}, 0)
 
 	newboxes := frame.box
 
@@ -138,22 +156,29 @@ type points struct {
 func (f *frameimpl) Insert(r []rune, p0 int) bool {
 	f.lk.Lock()
 	defer f.lk.Unlock()
-	return f.insertimpl(r, p0)
+	return f.insertimpl(r, nil, p0)
 }
 
 func (f *frameimpl) InsertByte(b []byte, p0 int) bool {
 	f.lk.Lock()
 	defer f.lk.Unlock()
-	return f.insertbyteimpl(b, p0)
+	return f.insertbyteimpl(b, nil, p0)
 }
 
-func (f *frameimpl) insertimpl(r []rune, p0 int) bool {
-	// TODO(rjk): Ick. But we'll get rid of this soon.
-	inby := []byte(string(r))
-	return f.insertbyteimpl(inby, p0)
+// InsertStyled is Insert with one style index per rune.
+func (f *frameimpl) InsertStyled(r []rune, styles []uint8, p0 int) bool {
+	f.lk.Lock()
+	defer f.lk.Unlock()
+	return f.insertimpl(r, styles, p0)
 }
 
-func (f *frameimpl) insertbyteimpl(inby []byte, p0 int) bool {
+func (f *frameimpl) insertimpl(r []rune, styles []uint8, p0 int) bool {
+	return f.insertbyteimpl([]byte(string(r)), styles, p0)
+}
+
+// bxscan divides inby into single-line, nl and tab boxes. bxscan assumes that
+// it has ownership of inby
+func (f *frameimpl) insertbyteimpl(inby []byte, styles []uint8, p0 int) bool {
 	//log.Printf("frame.Insert. Start: %q", string(inby))
 	//defer log.Println("frame.Insert end")
 	//f.Logboxes("at very start of insert")
@@ -166,7 +191,6 @@ func (f *frameimpl) insertbyteimpl(inby []byte, p0 int) bool {
 	}
 
 	col := f.cols[ColBack]
-	tcol := f.cols[ColText]
 
 	pts := make([]points, 0, 5)
 
@@ -185,7 +209,7 @@ func (f *frameimpl) insertbyteimpl(inby []byte, p0 int) bool {
 	// ppt0 and ppt1 are start and end of insertion as they will appear when
 	// insertion is complete. pt0 is current location of insertion position.
 	// (p0); pt1 is terminal point (without line wrap) of insertion.
-	pt0, pt1, nframe := f.bxscan(inby, p0, n0)
+	pt0, pt1, nframe := f.bxscan(inby, styles, p0, n0)
 
 	// TODO(rjk): Figure out why opt0 needs to exist.
 	opt0 := pt0
@@ -351,7 +375,7 @@ func (f *frameimpl) insertbyteimpl(inby []byte, p0 int) bool {
 	}
 
 	f.fillNonGlyphAreas(ppt0, ppt1, col)
-	nframe.drawtext(ppt0, tcol, col)
+	nframe.drawtext(ppt0)
 
 	// Skip the rest if nothing is added. This means that f.lastlinefull is valid.
 	if len(nframe.box) == 0 {

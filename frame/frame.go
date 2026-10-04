@@ -50,6 +50,8 @@ type SelectScrollUpdater interface {
 	// Insert will remove the selection or tick  if present but update selection offsets.
 	Insert([]rune, int) bool
 	InsertByte([]byte, int) bool
+	// InsertStyled is Insert with a style index per rune (see StyleColours).
+	InsertStyled([]rune, []uint8, int) bool
 
 	IsLastLineFull() bool
 	Rect() image.Rectangle
@@ -106,6 +108,14 @@ type Frame interface {
 	// fewer than p runes, Ptofchar returns the location of the upper right
 	// corner of the last character in the Frame
 	Ptofchar(int) image.Point
+
+	// Restyle changes the styles of the runes in [p0,p1) to styles
+	// (one index per rune) and repaints them; the text is unchanged.
+	Restyle(p0, p1 int, styles []uint8)
+
+	// SetStyleTable installs the colours for style indices. Index 0 is
+	// always the frame's own text and background colours.
+	SetStyleTable([]StyleColours)
 
 	// Redraw redraws the background of the Frame where the Frame is inside
 	// enclosing. Frame is responsible for drawing all of the pixels inside
@@ -232,6 +242,7 @@ type frbox struct {
 	Ptr    []byte // UTF-8 string in this box.
 	Bc     rune   // The kind of special layout box: '\n' or '\t'
 	Minwid byte
+	Style  uint8 // index into the frame's style table; 0 is plain text
 }
 
 // Helpful code for debugging reentrancy.
@@ -291,6 +302,8 @@ type frameimpl struct {
 	// Use this if the Frame is being used "headless" to measure some text.
 	noredraw  bool
 	tickscale int // tick scaling factor
+
+	styles []StyleColours // colours per style index, see style.go
 }
 
 // NewFrame creates a new Frame with Font ft, background image b, colours cols, and

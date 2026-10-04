@@ -37,13 +37,13 @@ func (up *selectscrollupdaterimpl) Delete(p0, p1 int) int {
 func (up *selectscrollupdaterimpl) Insert(r []rune, p0 int) bool {
 	// log.Println("selectscrollupdaterimpl.Insert")
 	f := (*frameimpl)(up)
-	return f.insertimpl(r, p0)
+	return f.insertimpl(r, nil, p0)
 }
 
 func (up *selectscrollupdaterimpl) InsertByte(b []byte, p0 int) bool {
 	// log.Println("selectscrollupdaterimpl.InsertByte")
 	f := (*frameimpl)(up)
-	return f.insertbyteimpl(b, p0)
+	return f.insertbyteimpl(b, nil, p0)
 }
 
 func (up *selectscrollupdaterimpl) IsLastLineFull() bool {
@@ -62,4 +62,9 @@ func (up *selectscrollupdaterimpl) TextOccupiedHeight(r image.Rectangle) int {
 	// log.Println("selectscrollupdaterimpl.TextOccupiedHeight")
 	f := (*frameimpl)(up)
 	return f.textoccupiedheightimpl(r)
+}
+
+func (up *selectscrollupdaterimpl) InsertStyled(r []rune, styles []uint8, p0 int) bool {
+	f := (*frameimpl)(up)
+	return f.insertimpl(r, styles, p0)
 }

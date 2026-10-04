@@ -6,17 +6,41 @@ import (
 	"github.com/rjkroege/edwood/draw"
 )
 
-func (f *frameimpl) drawtext(pt image.Point, text draw.Image, back draw.Image) {
-	// log.Println("DrawText at", pt, "NoRedraw", f.NoRedraw, text)
+// drawtext draws every box of f starting at pt, in the colours of each
+// box's style. The caller has already filled the background with the
+// frame's background colour.
+func (f *frameimpl) drawtext(pt image.Point) {
 	for _, b := range f.box {
 		pt = f.cklinewrap(pt, b)
-		// log.Printf("box [%d] %#v pt %v NoRedraw %v nrune %d\n",  nb, string(b.Ptr), pt, f.NoRedraw, b.Nrune)
-
 		if !f.noredraw && b.Nrune >= 0 {
-			f.background.Bytes(pt, text, image.Point{}, f.font, b.Ptr)
+			f.drawStyledBox(pt, b, b.Ptr, b.Wid)
 		}
 		pt.X += b.Wid
 	}
+}
+
+// drawStyledBox paints the bytes ptr of box b (width w pixels) at pt with
+// the box's style: its background if it differs from the frame's, its
+// text colour, and an underline when the style asks for one.
+func (f *frameimpl) drawStyledBox(pt image.Point, b *frbox, ptr []byte, w int) {
+	x := pt.X + w
+	if x > f.rect.Max.X {
+		x = f.rect.Max.X
+	}
+	if back := f.styleBack(b); back != f.cols[ColBack] {
+		f.background.Draw(image.Rect(pt.X, pt.Y, x, pt.Y+f.defaultfontheight), back, nil, pt)
+	}
+	f.background.Bytes(pt, f.styleText(b), image.Point{}, f.font, ptr)
+	f.drawUnderline(pt, b, x)
+}
+
+// drawUnderline draws the style's underline under a box from pt.X to x.
+func (f *frameimpl) drawUnderline(pt image.Point, b *frbox, x int) {
+	if !f.styleUnderline(b) || x <= pt.X {
+		return
+	}
+	y := pt.Y + f.defaultfontheight
+	f.background.Draw(image.Rect(pt.X, y-1, x, y), f.styleText(b), nil, image.Pt(pt.X, y-1))
 }
 
 // drawBox is a helpful debugging utility that wraps each box with a
@@ -54,10 +78,9 @@ func (f *frameimpl) drawselimpl(pt image.Point, p0, p1 int, highlighted bool) {
 
 	if f.sp0 != f.sp1 && f.highlighton {
 		// Clear the selection so that subsequent code can
-		// update correctly.
-		back := f.cols[ColBack]
-		text := f.cols[ColText]
-		f.drawsel0(f.ptofcharptb(f.sp0, f.rect.Min, 0), f.sp0, f.sp1, back, text)
+		// update correctly. nil colours mean "each box in its own
+		// style".
+		f.drawsel0(f.ptofcharptb(f.sp0, f.rect.Min, 0), f.sp0, f.sp1, nil, nil)
 
 		// Avoid multiple draws.
 		f.highlighton = false
@@ -102,6 +125,10 @@ func (f *frameimpl) drawselimpl(pt image.Point, p0, p1 int, highlighted bool) {
 //
 // TODO(rjk): Figure out if this is a true or false statement.
 // Function does not mutate f.p0, f.p1 (well... actually, it does.)
+//
+// When back and text are nil, each box is drawn in the colours of its own
+// style (this unhighlights a selection). Otherwise the given colours are
+// used for every box: a highlighted selection hides the styles.
 func (f *frameimpl) drawsel0(pt image.Point, p0, p1 int, back draw.Image, text draw.Image) image.Point {
 	// log.Println("Frame Drawsel0 Start", p0, p1,  f.P0, f.P1)
 	// defer log.Println("Frame Drawsel0 End", f.P0, f.P1 )
@@ -111,6 +138,11 @@ func (f *frameimpl) drawsel0(pt image.Point, p0, p1 int, back draw.Image, text d
 
 	if p0 > p1 {
 		panic("Drawsel0: p0 and p1 must be ordered")
+	}
+	styled := back == nil && text == nil
+	fillback := back
+	if fillback == nil {
+		fillback = f.cols[ColBack]
 	}
 
 	nb := 0
@@ -133,7 +165,7 @@ func (f *frameimpl) drawsel0(pt image.Point, p0, p1 int, back draw.Image, text d
 					qt.X = f.rect.Max.X
 				}
 				//f.drawBox(image.Rect(qt.X, qt.Y, f.Rect.Max.X, pt.Y), text, back,qt)
-				f.background.Draw(image.Rect(qt.X, qt.Y, f.rect.Max.X, pt.Y), back, nil, qt)
+				f.background.Draw(image.Rect(qt.X, qt.Y, f.rect.Max.X, pt.Y), fillback, nil, qt)
 			}
 		}
 		ptr := b.Ptr
@@ -159,10 +191,19 @@ func (f *frameimpl) drawsel0(pt image.Point, p0, p1 int, back draw.Image, text d
 		if x > f.rect.Max.X {
 			x = f.rect.Max.X
 		}
-		// f.drawBox(image.Rect(pt.X, pt.Y, x, pt.Y+f.Font.DefaultHeight()), text, back, pt)
-		f.background.Draw(image.Rect(pt.X, pt.Y, x, pt.Y+f.defaultfontheight), back, nil, pt)
-		if b.Nrune >= 0 {
-			f.background.Bytes(pt, text, image.Point{}, f.font, ptr[0:runeindex(ptr, nr)])
+		if styled {
+			f.background.Draw(image.Rect(pt.X, pt.Y, x, pt.Y+f.defaultfontheight), f.styleBack(b), nil, pt)
+			if b.Nrune >= 0 {
+				f.background.Bytes(pt, f.styleText(b), image.Point{}, f.font, ptr[0:runeindex(ptr, nr)])
+			}
+			f.drawUnderline(pt, b, x)
+		} else {
+			f.background.Draw(image.Rect(pt.X, pt.Y, x, pt.Y+f.defaultfontheight), back, nil, pt)
+			if b.Nrune >= 0 {
+				f.background.Bytes(pt, text, image.Point{}, f.font, ptr[0:runeindex(ptr, nr)])
+			}
+			// A highlighted selection keeps the diagnostic underline.
+			f.drawUnderline(pt, b, x)
 		}
 		pt.X += w
 		p += nr
@@ -172,7 +213,7 @@ func (f *frameimpl) drawsel0(pt image.Point, p0, p1 int, back draw.Image, text d
 		qt := pt
 		pt = f.cklinewrap(pt, f.box[nb])
 		if pt.Y > qt.Y {
-			f.drawBox(image.Rect(qt.X, qt.Y, f.rect.Max.X, pt.Y), f.cols[ColHigh], back, qt)
+			f.drawBox(image.Rect(qt.X, qt.Y, f.rect.Max.X, pt.Y), f.cols[ColHigh], fillback, qt)
 			// f.Background.Draw(image.Rect(qt.X, qt.Y, f.Rect.Max.X, pt.Y), back, nil, qt)
 		}
 	}
