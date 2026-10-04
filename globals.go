@@ -65,6 +65,8 @@ type globals struct {
 	editoutlk chan bool
 
 	WinID int
+
+	keymap Keymap // key bindings in effect, see keys.go
 }
 
 // Singleton global object.
@@ -92,6 +94,7 @@ func makeglobals() *globals {
 		cedit:      make(chan int),
 		cexit:      make(chan struct{}),
 		cwarn:      make(chan uint),
+		keymap:     DefaultKeymap(),
 	}
 
 	if home, err := os.UserHomeDir(); err == nil {

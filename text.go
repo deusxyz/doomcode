@@ -865,6 +865,23 @@ func (t *Text) Complete() []rune {
 	return nil
 }
 
+// tagExpand expands a tag to show all of its text.
+func (t *Text) tagExpand() {
+	if !t.w.tagexpand {
+		t.w.tagexpand = true
+		t.w.Resize(t.w.r, false, true)
+	}
+}
+
+// tagShrink shrinks a tag back to a single line.
+func (t *Text) tagShrink() {
+	if t.w.tagexpand {
+		t.w.tagexpand = false
+		t.w.taglines = 1
+		t.w.Resize(t.w.r, false, true)
+	}
+}
+
 func (t *Text) Type(r rune) {
 	var (
 		q0, q1    int
@@ -881,121 +898,36 @@ func (t *Text) Type(r rune) {
 	nr = 1
 	rp := []rune{r}
 
-	Tagdown := func() {
-		// expand tag to show all text
-		if !t.w.tagexpand {
-			t.w.tagexpand = true
-			t.w.Resize(t.w.r, false, true)
+	// Bound keys run their action and are done. Actions that mutate the
+	// buffer get an undo point first, as typing would.
+	if a := t.keymap().Lookup(r); a != nil {
+		if a.Mutates && t.what == Body && t.eq0 == -1 {
+			t.markUndo()
 		}
+		a.Fn(t)
+		return
 	}
 
-	Tagup := func() {
-		// shrink tag to single line
-		if t.w.tagexpand {
-			t.w.tagexpand = false
-			t.w.taglines = 1
-			t.w.Resize(t.w.r, false, true)
-		}
-	}
-
-	caseDown := func() {
-		q0 = t.org + t.fr.Charofpt(image.Pt(t.fr.Rect().Min.X, t.fr.Rect().Min.Y+n*t.fr.DefaultFontHeight()))
-		t.SetOrigin(q0, true)
-	}
-	caseUp := func() {
-		q0 = t.BackNL(t.org, n)
-		t.SetOrigin(q0, true)
-	}
-
-	setUndoPoint := func() {
-		if t.what == Body {
-			global.seq++
-			t.file.Mark(global.seq)
-		}
-	}
-
-	// This switch block contains all actions that don't mutate the buffer
-	// and hence there is no need to create an Undo record.
+	// Mouse wheel scrolling arrives as pseudo-keys.
 	switch r {
-	case draw.KeyLeft:
-		t.TypeCommit()
-		if t.q0 > 0 {
-			if t.q0 != t.q1 {
-				t.Show(t.q0, t.q0, true)
-			} else {
-				t.Show(t.q0-1, t.q0-1, true)
-			}
-		}
-		return
-	case draw.KeyRight:
-		t.TypeCommit()
-		if t.q1 < t.file.Nr() {
-			// This is a departure from the plan9/plan9port acme
-			// Instead of always going right one char from q1, it
-			// collapses multi-character selections first, behaving
-			// like every other selection on modern systems. -flux
-			if t.q0 != t.q1 {
-				t.Show(t.q1, t.q1, true)
-			} else {
-				t.Show(t.q1+1, t.q1+1, true)
-			}
-		}
-		return
-	case draw.KeyDown, 0xF800:
-		if t.what == Tag {
-			Tagdown()
-			return
-		}
-		t.TypeCommit()
-		t.moveVertical(1)
-		return
 	case Kscrollonedown:
 		if t.what == Tag {
-			Tagdown()
+			t.tagExpand()
 			return
 		}
 		n = drawutil.MouseScrollSize(t.fr.GetFrameFillStatus().Maxlines)
 		if n <= 0 {
 			n = 1
 		}
-		caseDown()
-		return
-	case draw.KeyPageDown:
-		n = 2 * t.fr.GetFrameFillStatus().Maxlines / 3
-		caseDown()
-		return
-	case draw.KeyUp:
-		if t.what == Tag {
-			Tagup()
-			return
-		}
-		t.TypeCommit()
-		t.moveVertical(-1)
+		t.scrollLines(n)
 		return
 	case Kscrolloneup:
 		if t.what == Tag {
-			Tagup()
+			t.tagShrink()
 			return
 		}
 		n = drawutil.MouseScrollSize(t.fr.GetFrameFillStatus().Maxlines)
-		caseUp()
-		return
-	case draw.KeyPageUp:
-		n = 2 * t.fr.GetFrameFillStatus().Maxlines / 3
-		caseUp()
-		return
-	case draw.KeyHome:
-		// Home: beginning of the current line (CUA). Acme's "scroll to
-		// top of file" moved to the Ctrl-B prefix.
-		t.TypeCommit()
-		q0 = t.lineStart(t.q0)
-		t.Show(q0, q0, true)
-		return
-	case draw.KeyEnd:
-		// End: end of the current line (CUA).
-		t.TypeCommit()
-		q0 = t.lineEnd(t.q1)
-		t.Show(q0, q0, true)
+		t.scrollLines(-n)
 		return
 	case '\t': // ^I (TAB)
 		if t.tabexpand {
@@ -1004,93 +936,17 @@ func (t *Text) Type(r rune) {
 			}
 			return
 		}
-	case 0x01, draw.KeyCmd + 'a': // ^A: select all (CUA; beginning of line is Home)
-		t.TypeCommit()
-		t.SetSelect(0, t.file.Nr())
-		return
-	case 0x05, draw.KeyCmd + 'e': // ^E: Execute, the keyboard equivalent of button 2
-		t.commitAll()
-		execute(t, t.q0, t.q1, false, nil)
-		return
-	case 0x0f, draw.KeyCmd + 'o': // ^O: Open/Look, the keyboard equivalent of button 3
-		t.commitAll()
-		look3(t, t.q0, t.q1, false)
-		return
-	case 0x13, draw.KeyCmd + 's': // ^S: Put
-		t.commitAll()
-		put(t, nil, nil, false, false, "")
-		return
-	case 0x3, draw.KeyCmd + 'c': // %C: copy
-		t.TypeCommit()
-		cut(t, t, nil, true, false, "")
-		return
-	case 0x1a, draw.KeyCmd + 'z': // %Z: undo
-		t.TypeCommit()
-		undo(t, nil, nil, true, false, "")
-		return
-	case 0x19, draw.KeyCmd + 'Z': // ^Y, %-shift-Z: redo
-		t.TypeCommit()
-		undo(t, nil, nil, false, false, "")
-		return
-
 	}
 
 	// Note the use of eq0 to always force an undo point at the start typing.
 	if t.what == Body && t.eq0 == -1 {
-		setUndoPoint()
+		t.markUndo()
 	}
 
-	// These following blocks contain mutating actions.
-	// cut/paste must be done after the seq++/filemark
-	switch r {
-	case 0x18, draw.KeyCmd + 'x': // %X: cut
-		setUndoPoint()
-		t.TypeCommit()
-		if t.what == Body {
-			global.seq++
-			t.file.Mark(global.seq)
-		}
-		cut(t, t, nil, true, true, "")
-		t.Show(t.q0, t.q0, true)
-		t.iq1 = t.q0
-		return
-	case 0x16, draw.KeyCmd + 'v': // %V: paste
-		setUndoPoint()
-		t.TypeCommit()
-		if t.what == Body {
-			global.seq++
-			t.file.Mark(global.seq)
-		}
-		paste(t, t, nil, true, false, "")
-		t.Show(t.q0, t.q1, true)
-		t.iq1 = t.q1
-		return
-	case 0x0b: // ^K: delete to end of line; on an empty line delete the newline
-		setUndoPoint()
-		t.TypeCommit()
-		if t.q0 == t.q1 {
-			q1 = t.lineEnd(t.q0)
-			if q1 == t.q0 && q1 < t.file.Nr() {
-				q1++
-			}
-			if q1 == t.q0 {
-				return
-			}
-			t.SetSelect(t.q0, q1)
-		}
-		if t.what == Body {
-			global.seq++
-			t.file.Mark(global.seq)
-		}
-		cut(t, t, nil, false, true, "")
-		t.Show(t.q0, t.q0, true)
-		t.iq1 = t.q0
-		return
-	}
 	wasrange := t.q0 != t.q1
 	removedstuff := false
 	if t.q1 > t.q0 {
-		setUndoPoint()
+		t.markUndo()
 		cut(t, t, nil, true, true, "")
 		t.eq0 = ^0
 		removedstuff = true
@@ -1105,7 +961,7 @@ func (t *Text) Type(r rune) {
 		if rp == nil {
 			return
 		}
-		setUndoPoint()
+		t.markUndo()
 		nr = len(rp) // runestrlen(rp);
 		// break into normal insertion case
 	case 0x1B:
@@ -1122,7 +978,7 @@ func (t *Text) Type(r rune) {
 		if t.q1 >= t.Nc()-1 {
 			return // End of file
 		}
-		setUndoPoint()
+		t.markUndo()
 		t.TypeCommit() // Avoid messing with the cache?
 		if !wasrange {
 			t.q1++
@@ -1155,7 +1011,7 @@ func (t *Text) Type(r rune) {
 			return
 		}
 
-		setUndoPoint()
+		t.markUndo()
 		t.Delete(q0, q0+nnb, true)
 
 		// Run through the code that will update the t.w.body.file.details.Name.
@@ -1165,7 +1021,7 @@ func (t *Text) Type(r rune) {
 		t.iq1 = t.q0
 		return
 	case '\n':
-		setUndoPoint()
+		t.markUndo()
 		if t.w.autoindent {
 			// find beginning of previous line using backspace code
 			nnb = t.BsWidth(0x15)    // ^U case
