@@ -176,23 +176,19 @@ Edwood получает клавиатуру через devdraw (plan9port, C) �
 
 ## 8. Конфигурация
 
-Файл `$HOME/.config/edwood/keys` (или `$EDWOOD_KEYS`), по строке на привязку, `#` — комментарий:
+Файл `$EDWOOD_KEYS`, иначе `$XDG_CONFIG_HOME/edwood/keys`, иначе `$HOME/.config/edwood/keys`. По строке на привязку, `#` — комментарий, `-` вместо действия снимает привязку. Файл накладывается на привязки по умолчанию, поэтому в нём только изменения:
 
 ```
 # клавиша        действие
-C-s              put
-C-e              execute
-C-o              look
-prefix x         del
-prefix %         newcol
-prefix Space     anchor
-Home             line-start
-S-Left           select-left        # фаза 2
+C-q              put
+F2               execute
+C-k              -                 # вернуть ^K под ввод текста
+Cmd-r            redo
 ```
 
-Имена клавиш: `C-` Ctrl, `M-` Alt, `S-` Shift, `Cmd-` Command; спецклавиши `Left Right Up Down Home End PgUp PgDn Ins Del Backspace Tab Enter Esc F1..F12 Space`; `prefix` — после Ctrl-B. Действия — фиксированный список идентификаторов (`put`, `execute`, `look`, `snarf`, `cut`, `paste`, `undo`, `redo`, `select-all`, `select-line`, `select-word`, `anchor`, `line-start`, `line-end`, `file-start`, `file-end`, `focus-left/right/up/down/next/prev`, `new`, `newcol`, `del`, `delcol`, `zoom`, `grow`, `shrink`, `tag`, …). Полный список фиксируется при реализации и выводится командой `Keys` в окно `+keys`, по-акмовски.
+Имена клавиш: `C-x` Ctrl, `Cmd-x` Command (с заглавной — Cmd-Shift), спецклавиши `Left Right Up Down Home End PgUp PgDn Ins Del Backspace Tab Enter Esc Space F1..F12`, одиночный символ — сам символ, `0xF800` — сырой код. Имена действий — из таблицы `actionTable` в `keys.go`; `Keys actions` печатает их с описаниями. Префиксные привязки (`prefix x`) и `S-`/`M-` появятся вместе с префиксом и фазой 2.
 
-Файл перечитывается командой `Keys reload` или при `Put` самого файла (через `log`, как делает `acmego`).
+Команда `Keys` (встроенная, вывод в `+Errors`): без аргумента — текущие привязки и путь к файлу; `Keys reload` — перечитать файл поверх умолчаний; `Keys actions` — список действий; `Keys file` — путь. Ошибки в файле не отменяют остальные строки: плохая строка пропускается и печатается с номером, при старте — в stderr, при `Keys reload` — в `+Errors`.
 
 ## 9. Где это ложится в код Edwood
 
