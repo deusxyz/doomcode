@@ -85,6 +85,16 @@ func mainWithDisplay(g *globals, dump *dumpfile.Content, display draw.Display) {
 	g.mouse = &g.mousectl.Mouse
 	g.keyboardctl = display.InitKeyboard()
 
+	// Key bindings: built-in defaults plus the user's keys file.
+	if n, errs := loadKeysFile(keysFilePath()); len(errs) > 0 || n > 0 {
+		for _, err := range errs {
+			log.Printf("keys file %s: %v", keysFilePath(), err)
+		}
+		if n > 0 {
+			log.Printf("keys file %s: %d binding(s) applied", keysFilePath(), n)
+		}
+	}
+
 	g.iconinit(display)
 
 	startplumbing()

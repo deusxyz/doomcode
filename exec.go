@@ -67,6 +67,7 @@ var globalexectab = []Exectab{
 	{"ID", id, false, true /*unused*/, true /*unused*/},
 	//	{ "Incl",		incl,		false,	true /*unused*/,		true /*unused*/		},
 	{"Indent", indent, false, true /*unused*/, true /*unused*/},
+	{"Keys", keys, false, true /*unused*/, true /*unused*/},
 	{"Kill", xkill, false, true /*unused*/, true /*unused*/},
 	{"Load", dump, false, false, true /*unused*/},
 	{"Local", local, false, true /*unused*/, true /*unused*/},
