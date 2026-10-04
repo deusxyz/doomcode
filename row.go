@@ -276,7 +276,10 @@ func (row *Row) Type(r rune, p image.Point) *Text {
 
 	clearmouse()
 	row.lk.Lock()
-	if *barflag || (global.focusSticky && global.barttext != nil) {
+	// Click to focus (default) or an explicit keyboard focus: type into
+	// the focused text. Otherwise, and before anything has been clicked,
+	// type into the text under the mouse.
+	if (*barflag || global.focusSticky) && global.barttext != nil {
 		t = global.barttext
 	} else {
 		t = row.Which(p)

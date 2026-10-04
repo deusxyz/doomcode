@@ -24,7 +24,7 @@ var (
 	command []*Command
 
 	globalAutoIndent  = flag.Bool("a", false, "Start each window in autoindent mode")
-	barflag           = flag.Bool("b", false, "Click to focus window instead of focus follows mouse (Bart's flag)")
+	barflag           = flag.Bool("b", true, "Click to focus: typing goes to the last clicked window. -b=false makes focus follow the mouse as in Acme")
 	varfontflag       = flag.String("f", defaultVarFont, "Variable-width font")
 	fixedfontflag     = flag.String("F", defaultFixedFont, "Fixed-width font")
 	mtpt              = flag.String("m", defaultMtpt, "Mountpoint for 9P file server")

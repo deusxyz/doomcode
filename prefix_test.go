@@ -196,3 +196,24 @@ func TestRowTypeHonoursStickyFocus(t *testing.T) {
 	}
 	global.focusSticky = false
 }
+
+// rectFrame is a MockFrame with a real on-screen rectangle, so that
+// Column.Which can hit-test the body.
+type rectFrame struct {
+	MockFrame
+	r image.Rectangle
+}
+
+func (f *rectFrame) Rect() image.Rectangle { return f.r }
+
+func TestRowTypeBeforeFirstClickGoesUnderMouse(t *testing.T) {
+	_, w := makeFocusScaffold()
+	global.barttext = nil
+	global.focusSticky = false
+	w[3].body.all = w[3].r
+	w[3].body.fr = &rectFrame{r: w[3].r}
+	global.row.Type('q', image.Pt(150, 100)) // over w3, nothing clicked yet
+	if got := w[3].body.file.String(); got != "qw3" && got != "w3q" {
+		t.Errorf("typed into %q; want the key to land in w3 under the mouse", got)
+	}
+}
