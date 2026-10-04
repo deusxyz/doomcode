@@ -82,7 +82,83 @@ type Text struct {
 
 	nofill bool // When true, updates to the Text shouldn't update the frame.
 
+	// Sticky column for vertical cursor movement (Up/Down). vcol is the
+	// rune offset from the start of the line that the user wants to stay
+	// in; it is only trusted while the caret is still at vcolq, the position
+	// the last vertical move left it at.
+	vcol  int
+	vcolq int
+
 	lk sync.Mutex
+}
+
+// lineStart returns the position of the first rune of the line containing q.
+func (t *Text) lineStart(q int) int {
+	for q > 0 && t.file.ReadC(q-1) != '\n' {
+		q--
+	}
+	return q
+}
+
+// lineEnd returns the position of the newline that ends the line containing
+// q, or the end of the buffer if the last line has no newline.
+func (t *Text) lineEnd(q int) int {
+	n := t.file.Nr()
+	for q < n && t.file.ReadC(q) != '\n' {
+		q++
+	}
+	return q
+}
+
+// moveVertical moves the caret one line up (dir < 0) or down (dir > 0),
+// keeping the column the user started in where the target line is long
+// enough. A selection collapses towards the direction of movement. On the
+// first or last line the caret goes to the start or end of the buffer.
+func (t *Text) moveVertical(dir int) {
+	q := t.q0
+	if dir > 0 {
+		q = t.q1
+	}
+	bol := t.lineStart(q)
+	if t.q0 != t.q1 || q != t.vcolq {
+		t.vcol = q - bol
+	}
+	var nbol int
+	if dir < 0 {
+		if bol == 0 {
+			// First line: go to the start of the buffer. That is a
+			// horizontal move, so forget the sticky column.
+			t.vcolq = -1
+			t.Show(0, 0, true)
+			return
+		}
+		nbol = t.lineStart(bol - 1)
+	} else {
+		eol := t.lineEnd(q)
+		if eol >= t.file.Nr() {
+			// Last line: go to the end of the buffer, see above.
+			t.vcolq = -1
+			t.Show(eol, eol, true)
+			return
+		}
+		nbol = eol + 1
+	}
+	nq := nbol + t.vcol
+	if neol := t.lineEnd(nbol); nq > neol {
+		nq = neol
+	}
+	t.vcolq = nq
+	t.Show(nq, nq, true)
+}
+
+// commitAll commits pending typed text in t the same way a mouse action does,
+// so that commands run from the keyboard see the current buffer contents.
+func (t *Text) commitAll() {
+	if t.w != nil {
+		t.w.Commit(t)
+	} else {
+		t.Commit()
+	}
 }
 
 // getfont is a convenience accessor that gets the draw.Font from the font
@@ -870,8 +946,8 @@ func (t *Text) Type(r rune) {
 			Tagdown()
 			return
 		}
-		n = t.fr.GetFrameFillStatus().Maxlines / 3
-		caseDown()
+		t.TypeCommit()
+		t.moveVertical(1)
 		return
 	case Kscrollonedown:
 		if t.what == Tag {
@@ -893,8 +969,8 @@ func (t *Text) Type(r rune) {
 			Tagup()
 			return
 		}
-		n = t.fr.GetFrameFillStatus().Maxlines / 3
-		caseUp()
+		t.TypeCommit()
+		t.moveVertical(-1)
 		return
 	case Kscrolloneup:
 		if t.what == Tag {
@@ -909,26 +985,17 @@ func (t *Text) Type(r rune) {
 		caseUp()
 		return
 	case draw.KeyHome:
+		// Home: beginning of the current line (CUA). Acme's "scroll to
+		// top of file" moved to the Ctrl-B prefix.
 		t.TypeCommit()
-		if t.org > t.iq1 {
-			q0 = t.BackNL(t.iq1, 1)
-			t.SetOrigin(q0, true)
-		} else {
-			t.Show(0, 0, false)
-		}
+		q0 = t.lineStart(t.q0)
+		t.Show(q0, q0, true)
 		return
 	case draw.KeyEnd:
+		// End: end of the current line (CUA).
 		t.TypeCommit()
-		if t.iq1 > t.org+t.fr.GetFrameFillStatus().Nchars {
-			if t.iq1 > t.file.Nr() {
-				// should not happen, but does. and it will crash textbacknl.
-				t.iq1 = t.file.Nr()
-			}
-			q0 = t.BackNL(t.iq1, 1)
-			t.SetOrigin(q0, true)
-		} else {
-			t.Show(t.file.Nr(), t.file.Nr(), false)
-		}
+		q0 = t.lineEnd(t.q1)
+		t.Show(q0, q0, true)
 		return
 	case '\t': // ^I (TAB)
 		if t.tabexpand {
@@ -937,22 +1004,21 @@ func (t *Text) Type(r rune) {
 			}
 			return
 		}
-	case 0x01: // ^A: beginning of line
+	case 0x01, draw.KeyCmd + 'a': // ^A: select all (CUA; beginning of line is Home)
 		t.TypeCommit()
-		// go to where ^U would erase, if not already at BOL
-		nnb = 0
-		if t.q0 > 0 && t.file.ReadC(t.q0-1) != '\n' {
-			nnb = t.BsWidth(0x15)
-		}
-		t.Show(t.q0-nnb, t.q0-nnb, true)
+		t.SetSelect(0, t.file.Nr())
 		return
-	case 0x05: // ^E: end of line
-		t.TypeCommit()
-		q0 = t.q0
-		for q0 < t.file.Nr() && t.file.ReadC(q0) != '\n' {
-			q0++
-		}
-		t.Show(q0, q0, true)
+	case 0x05, draw.KeyCmd + 'e': // ^E: Execute, the keyboard equivalent of button 2
+		t.commitAll()
+		execute(t, t.q0, t.q1, false, nil)
+		return
+	case 0x0f, draw.KeyCmd + 'o': // ^O: Open/Look, the keyboard equivalent of button 3
+		t.commitAll()
+		look3(t, t.q0, t.q1, false)
+		return
+	case 0x13, draw.KeyCmd + 's': // ^S: Put
+		t.commitAll()
+		put(t, nil, nil, false, false, "")
 		return
 	case 0x3, draw.KeyCmd + 'c': // %C: copy
 		t.TypeCommit()
@@ -962,7 +1028,7 @@ func (t *Text) Type(r rune) {
 		t.TypeCommit()
 		undo(t, nil, nil, true, false, "")
 		return
-	case draw.KeyCmd + 'Z': // %-shift-Z: redo
+	case 0x19, draw.KeyCmd + 'Z': // ^Y, %-shift-Z: redo
 		t.TypeCommit()
 		undo(t, nil, nil, false, false, "")
 		return
@@ -998,6 +1064,27 @@ func (t *Text) Type(r rune) {
 		paste(t, t, nil, true, false, "")
 		t.Show(t.q0, t.q1, true)
 		t.iq1 = t.q1
+		return
+	case 0x0b: // ^K: delete to end of line; on an empty line delete the newline
+		setUndoPoint()
+		t.TypeCommit()
+		if t.q0 == t.q1 {
+			q1 = t.lineEnd(t.q0)
+			if q1 == t.q0 && q1 < t.file.Nr() {
+				q1++
+			}
+			if q1 == t.q0 {
+				return
+			}
+			t.SetSelect(t.q0, q1)
+		}
+		if t.what == Body {
+			global.seq++
+			t.file.Mark(global.seq)
+		}
+		cut(t, t, nil, false, true, "")
+		t.Show(t.q0, t.q0, true)
+		t.iq1 = t.q0
 		return
 	}
 	wasrange := t.q0 != t.q1

@@ -289,8 +289,10 @@ func (row *Row) Type(r rune, p image.Point) *Text {
 		} else {
 			w.Lock('K')
 			w.Type(t, r)
-			// Expand tag if necessary
-			if t.what == Tag {
+			// Expand tag if necessary. A keyboard Execute (^E) may have
+			// run Del on this window, in which case it no longer has a
+			// column and must not be resized.
+			if t.what == Tag && w.col != nil {
 				t.w.tagsafe = false
 				if r == '\n' {
 					t.w.tagexpand = true
