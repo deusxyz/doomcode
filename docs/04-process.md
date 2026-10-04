@@ -10,9 +10,10 @@
   bin/edwood                    свежая сборка для ручной проверки (не в git)
   CLAUDE.md                     инструкции для Claude по этому проекту
   edwood/                       клон Edwood, здесь живёт код
-  devdraw/                      форк Go-devdraw (9fans.net/go/cmd/devdraw), отдельный модуль; сборка в bin/devdraw
+  build.sh, run.sh              сборка обоих бинарников в bin/ и запуск с нужным окружением
 ~/projects/plan9                plan9port, справочник и источник devdraw/9p/fontsrv
-~/projects/9fans/go             9fans.net/go, в т.ч. Go-devdraw (понадобится в фазе 2)
+~/projects/9fans/go             клон форка 9fans.net/go (origin = deusxyz/9fans-go, upstream = 9fans/go);
+                                ветка devdraw/keys содержит наши правки cmd/devdraw
 ```
 
 Git-remotes в `edwood/`:
@@ -79,18 +80,20 @@ Git-remotes в `edwood/`:
 cd ~/projects/justcode/edwood && go build -o ../bin/edwood . && ./presub.sh
 ```
 
-Форк devdraw:
+Оба бинарника одной командой (devdraw собирается из клона форка 9fans-go, путь можно переопределить переменной `NINEFANS_GO`):
 
 ```bash
-cd ~/projects/justcode/devdraw && go build -o ../bin/devdraw .
+~/projects/justcode/build.sh
 ```
 
 Запуск рядом с работающим plan9port acme (у них одно имя сервиса `acme`, поэтому отдельное пространство имён):
 
 ```bash
-cd ~/projects/justcode && PLAN9=~/projects/plan9 PATH=$PATH:~/projects/plan9/bin NAMESPACE=/tmp/ns.edwood DEVDRAW=$PWD/bin/devdraw ./bin/edwood -f $PLAN9/font/lucsans/euro.8.font -F $PLAN9/font/lucm/unicode.9.font docs/
+~/projects/justcode/run.sh ~/projects/justcode/docs/
 ```
+
+Скрипт выставляет `PLAN9`, `NAMESPACE=/tmp/ns.edwood` и `DEVDRAW=bin/devdraw`; остальные аргументы уходят Edwood.
 
 Клиентам (`win`, `9p`, `acme-lsp`) нужен тот же `NAMESPACE=/tmp/ns.edwood`. `DEVDRAW` указывает на наш форк: без него будет взят `devdraw` из PATH (у вас это Go-devdraw из `~/go/bin`, без автоповтора и Cmd).
 
-Открытый вопрос: `docs/` и `devdraw/` пока не под git. Варианты: сделать `justcode` репозиторием (с `edwood/` в `.gitignore`, как вложенный репозиторий) или завести отдельный форк 9fans.net/go. Первое проще.
+Правки devdraw живут в форке 9fans-go (ветка `devdraw/keys`), а не в justcode: так их можно отправить в upstream 9fans/go. Путь модуля `9fans.net/go` в форке не меняется; потребители при необходимости подключают форк через `replace 9fans.net/go => github.com/deusxyz/9fans-go <ревизия>`.
