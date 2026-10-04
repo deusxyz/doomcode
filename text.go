@@ -89,6 +89,11 @@ type Text struct {
 	vcol  int
 	vcolq int
 
+	// Keyboard selection anchor, see select.go. While anchorOn, cursor
+	// movement extends the selection between anchor and the caret.
+	anchorOn bool
+	anchor   int
+
 	lk sync.Mutex
 }
 
@@ -119,8 +124,11 @@ func (t *Text) moveVertical(dir int) {
 	if dir > 0 {
 		q = t.q1
 	}
+	if t.anchorOn {
+		q = t.caret()
+	}
 	bol := t.lineStart(q)
-	if t.q0 != t.q1 || q != t.vcolq {
+	if (t.q0 != t.q1 && !t.anchorOn) || q != t.vcolq {
 		t.vcol = q - bol
 	}
 	var nbol int
@@ -129,7 +137,7 @@ func (t *Text) moveVertical(dir int) {
 			// First line: go to the start of the buffer. That is a
 			// horizontal move, so forget the sticky column.
 			t.vcolq = -1
-			t.Show(0, 0, true)
+			t.moveCaret(0)
 			return
 		}
 		nbol = t.lineStart(bol - 1)
@@ -138,7 +146,7 @@ func (t *Text) moveVertical(dir int) {
 		if eol >= t.file.Nr() {
 			// Last line: go to the end of the buffer, see above.
 			t.vcolq = -1
-			t.Show(eol, eol, true)
+			t.moveCaret(eol)
 			return
 		}
 		nbol = eol + 1
@@ -148,7 +156,7 @@ func (t *Text) moveVertical(dir int) {
 		nq = neol
 	}
 	t.vcolq = nq
-	t.Show(nq, nq, true)
+	t.moveCaret(nq)
 }
 
 // commitAll commits pending typed text in t the same way a mouse action does,
@@ -908,6 +916,14 @@ func (t *Text) Type(r rune) {
 		return
 	}
 
+	// Esc in anchor mode just ends it, keeping the caret; any other
+	// unbound key (typing, erasing) ends anchor mode as well.
+	if r == 0x1B && t.anchorOn {
+		t.keyCollapse()
+		return
+	}
+	t.dropAnchor()
+
 	// Mouse wheel scrolling arrives as pseudo-keys.
 	switch r {
 	case Kscrollonedown:
@@ -930,6 +946,10 @@ func (t *Text) Type(r rune) {
 		t.scrollLines(-n)
 		return
 	case '\t': // ^I (TAB)
+		if t.q0 != t.q1 && t.selectionSpansLines() {
+			t.indentLines() // a multi-line selection is indented, not replaced
+			return
+		}
 		if t.tabexpand {
 			for i := 0; i < t.tabstop; i++ {
 				t.Type(' ')
@@ -1114,6 +1134,7 @@ func (t *Text) Select() {
 	)
 
 	selecttext = t
+	t.dropAnchor()
 
 	// To have double-clicking and chording, we double-click
 	// immediately if it might make sense.

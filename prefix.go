@@ -110,6 +110,9 @@ var defaultPrefixBindings = []struct{ key, action string }{
 	{"G", "file-end"},
 	{"Enter", "execute"},
 	{"/", "look"},
+	{"Space", "anchor"},
+	{"b", "select-block"},
+	{"Tab", "outdent"},
 }
 
 // DefaultPrefixKeymap returns a fresh copy of the built-in prefix bindings.

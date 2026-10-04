@@ -209,6 +209,17 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-Z", "redo"},
 	{"C-k", "kill-line"},
 
+	{"C-l", "select-line"},
+	{"Cmd-l", "select-line"},
+	{"C-d", "select-word"},
+	{"Cmd-d", "select-word"},
+	{"C-f", "find"},
+	{"Cmd-f", "find"},
+	{"C-g", "goto"},
+	{"Cmd-g", "goto"},
+	{"C-n", "new"},
+	{"Cmd-n", "new"},
+
 	{"C-e", "execute"},
 	{"Cmd-e", "execute"},
 	{"C-o", "look"},
@@ -253,6 +264,14 @@ func buildActionTable() map[string]*Action {
 		{Name: "redo", Doc: "Redo", Fn: (*Text).keyRedo},
 		{Name: "kill-line", Doc: "delete to the end of the line; on an empty line delete the newline", Mutates: true, Fn: (*Text).keyKillLine},
 
+		{Name: "anchor", Doc: "drop the selection anchor: cursor keys now extend the selection (Esc ends it)", Fn: (*Text).keyAnchor},
+		{Name: "select-line", Doc: "select the whole line; again to add the next line", Fn: (*Text).keySelectLine},
+		{Name: "select-word", Doc: "select the word under the cursor; with a selection, find its next occurrence", Fn: (*Text).keySelectWord},
+		{Name: "select-block", Doc: "select the text inside the nearest enclosing brackets; again to grow outwards", Fn: (*Text).keySelectBlock},
+		{Name: "indent", Doc: "indent the selected lines by one tab stop", Mutates: true, Fn: (*Text).indentLines},
+		{Name: "outdent", Doc: "outdent the selected lines by one tab stop", Mutates: true, Fn: (*Text).outdentLines},
+		{Name: "find", Doc: "find the next occurrence of the selection; without one, type \"Look \" into the tag to complete, then Esc and ^E", Fn: (*Text).keyFind},
+		{Name: "goto", Doc: "type \":\" into the tag: complete the address, then Esc and ^O", Fn: (*Text).keyGoto},
 		{Name: "execute", Doc: "run the selection or the word under the cursor, like button 2", Fn: (*Text).keyExecute},
 		{Name: "look", Doc: "open or search for the selection or the word under the cursor, like button 3", Fn: (*Text).keyLook},
 		{Name: "put", Doc: "write the window to its file (Put)", Fn: (*Text).keyPut},
@@ -302,6 +321,10 @@ func (t *Text) scrollLines(n int) {
 
 func (t *Text) keyCursorLeft() {
 	t.TypeCommit()
+	if t.anchorOn {
+		t.moveCaret(t.caret() - 1)
+		return
+	}
 	if t.q0 > 0 {
 		if t.q0 != t.q1 {
 			t.Show(t.q0, t.q0, true)
@@ -313,6 +336,10 @@ func (t *Text) keyCursorLeft() {
 
 func (t *Text) keyCursorRight() {
 	t.TypeCommit()
+	if t.anchorOn {
+		t.moveCaret(t.caret() + 1)
+		return
+	}
 	if t.q1 < t.file.Nr() {
 		// This is a departure from the plan9/plan9port acme
 		// Instead of always going right one char from q1, it
@@ -354,27 +381,36 @@ func (t *Text) keyPageDown() {
 
 func (t *Text) keyLineStart() {
 	t.TypeCommit()
-	q0 := t.lineStart(t.q0)
-	t.Show(q0, q0, true)
+	q := t.q0
+	if t.anchorOn {
+		q = t.caret()
+	}
+	t.moveCaret(t.lineStart(q))
 }
 
 func (t *Text) keyLineEnd() {
 	t.TypeCommit()
-	q0 := t.lineEnd(t.q1)
-	t.Show(q0, q0, true)
+	q := t.q1
+	if t.anchorOn {
+		q = t.caret()
+	}
+	t.moveCaret(t.lineEnd(q))
 }
 
 func (t *Text) keySelectAll() {
 	t.TypeCommit()
+	t.dropAnchor()
 	t.SetSelect(0, t.file.Nr())
 }
 
 func (t *Text) keySnarf() {
 	t.TypeCommit()
+	t.dropAnchor()
 	cut(t, t, nil, true, false, "")
 }
 
 func (t *Text) keyCut() {
+	t.dropAnchor()
 	t.markUndo()
 	t.TypeCommit()
 	t.markUndo()
@@ -384,6 +420,7 @@ func (t *Text) keyCut() {
 }
 
 func (t *Text) keyPaste() {
+	t.dropAnchor()
 	t.markUndo()
 	t.TypeCommit()
 	t.markUndo()
@@ -403,6 +440,7 @@ func (t *Text) keyRedo() {
 }
 
 func (t *Text) keyKillLine() {
+	t.dropAnchor()
 	t.markUndo()
 	t.TypeCommit()
 	if t.q0 == t.q1 {
