@@ -66,7 +66,16 @@ type globals struct {
 
 	WinID int
 
-	keymap Keymap // key bindings in effect, see keys.go
+	keymap       Keymap // key bindings in effect, see keys.go
+	prefixKeymap Keymap // bindings after Ctrl-B, see prefix.go
+
+	// Keyboard focus, see prefix.go. focusSticky makes typing go to
+	// barttext even without -b, from a prefix navigation until the mouse
+	// moves to another text. prevfocus serves focus-prev. lastWarp is
+	// where the pointer was last moved, for tests.
+	focusSticky bool
+	prevfocus   *Text
+	lastWarp    image.Point
 }
 
 // Singleton global object.
@@ -80,21 +89,22 @@ func init() {
 
 func makeglobals() *globals {
 	g := &globals{
-		acmeshell:  os.Getenv("acmeshell"),
-		editing:    Inactive,
-		editoutlk:  make(chan bool, 1),
-		cwait:      make(chan ProcessState),
-		ccommand:   make(chan *Command),
-		ckill:      make(chan string),
-		cxfidalloc: make(chan *Xfid),
-		cxfidfree:  make(chan *Xfid),
-		cnewwindow: make(chan *Window),
-		csignal:    make(chan os.Signal, 1),
-		cerr:       make(chan error),
-		cedit:      make(chan int),
-		cexit:      make(chan struct{}),
-		cwarn:      make(chan uint),
-		keymap:     DefaultKeymap(),
+		acmeshell:    os.Getenv("acmeshell"),
+		editing:      Inactive,
+		editoutlk:    make(chan bool, 1),
+		cwait:        make(chan ProcessState),
+		ccommand:     make(chan *Command),
+		ckill:        make(chan string),
+		cxfidalloc:   make(chan *Xfid),
+		cxfidfree:    make(chan *Xfid),
+		cnewwindow:   make(chan *Window),
+		csignal:      make(chan os.Signal, 1),
+		cerr:         make(chan error),
+		cedit:        make(chan int),
+		cexit:        make(chan struct{}),
+		cwarn:        make(chan uint),
+		keymap:       DefaultKeymap(),
+		prefixKeymap: DefaultPrefixKeymap(),
 	}
 
 	if home, err := os.UserHomeDir(); err == nil {

@@ -19,7 +19,11 @@ type Action struct {
 	// Mutates reports whether the action may change the buffer, in which
 	// case Text.Type establishes an undo point before running it.
 	Mutates bool
-	Fn      func(t *Text)
+	// Row marks an action on windows and columns rather than on a text:
+	// it tolerates a nil focus text. Text actions are skipped when there
+	// is no focus.
+	Row bool
+	Fn  func(t *Text)
 }
 
 // Keymap maps a keyboard rune, as delivered by devdraw, to an Action.
@@ -253,6 +257,12 @@ func buildActionTable() map[string]*Action {
 		{Name: "look", Doc: "open or search for the selection or the word under the cursor, like button 3", Fn: (*Text).keyLook},
 		{Name: "put", Doc: "write the window to its file (Put)", Fn: (*Text).keyPut},
 	} {
+		if _, dup := table[a.Name]; dup {
+			panic("duplicate action " + a.Name)
+		}
+		table[a.Name] = a
+	}
+	for _, a := range prefixActions() {
 		if _, dup := table[a.Name]; dup {
 			panic("duplicate action " + a.Name)
 		}

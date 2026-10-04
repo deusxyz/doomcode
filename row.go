@@ -276,7 +276,7 @@ func (row *Row) Type(r rune, p image.Point) *Text {
 
 	clearmouse()
 	row.lk.Lock()
-	if *barflag {
+	if *barflag || (global.focusSticky && global.barttext != nil) {
 		t = global.barttext
 	} else {
 		t = row.Which(p)

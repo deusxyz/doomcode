@@ -308,6 +308,11 @@ func MovedMouse(g *globals, m draw.Mouse) {
 		g.mousetext.w.Commit(g.mousetext)
 		g.mousetext.w.Unlock()
 	}
+	if t != g.mousetext && t != nil && t != g.barttext {
+		// The user moved the mouse to another text: the explicit keyboard
+		// focus from a prefix navigation no longer applies.
+		g.focusSticky = false
+	}
 	g.mousetext = t
 	if t == nil {
 		return
@@ -416,6 +421,7 @@ func keyboardthread(g *globals, display draw.Display) {
 	emptyTimer := make(<-chan time.Time)
 	timerchan := emptyTimer
 	typetext := (*Text)(nil)
+	var prefix prefixState
 	for {
 		select {
 		case <-timerchan:
@@ -428,8 +434,28 @@ func keyboardthread(g *globals, display draw.Display) {
 			}
 		case r := <-g.keyboardctl.C:
 			for {
+				switch res, a := prefix.feed(r, g.prefixKeymap); res {
+				case prefixArmed:
+					display.SetCursor(&prefixcursor)
+					display.Flush()
+					goto next
+				case prefixCancel:
+					display.SetCursor(nil)
+					display.Flush()
+					goto next
+				case prefixRun:
+					display.SetCursor(nil)
+					g.runPrefixAction(a)
+					display.Flush()
+					goto next
+				case prefixLiteral:
+					display.SetCursor(nil)
+				}
 				typetext = g.row.Type(r, g.mouse.Point)
 				t = typetext
+				if t != nil {
+					g.barttext = t
+				}
 				if t != nil && t.col != nil && !(r == draw.KeyDown || r == draw.KeyLeft || r == draw.KeyRight) { // scrolling doesn't change activecol
 					g.activecol = t.col
 				}
@@ -454,10 +480,37 @@ func keyboardthread(g *globals, display draw.Display) {
 					display.Flush()
 				}
 				break
+			next:
+				select {
+				case r = <-g.keyboardctl.C:
+					continue
+				default:
+				}
+				break
 			}
 		}
 	}
 
+}
+
+// runPrefixAction runs a prefix action on the focused text with the row
+// and the text's window locked, as a keystroke into that text would be.
+func (g *globals) runPrefixAction(a *Action) {
+	g.row.lk.Lock()
+	defer g.row.lk.Unlock()
+	t := g.focusText()
+	if t == nil && !a.Row {
+		return
+	}
+	if t != nil && t.w != nil {
+		w := t.w
+		w.Lock('K')
+		defer w.Unlock()
+		w.Commit(t)
+	} else if t != nil {
+		t.Commit()
+	}
+	a.Fn(t)
 }
 
 func waitthread(g *globals, ctx context.Context) {

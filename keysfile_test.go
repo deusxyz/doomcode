@@ -10,18 +10,20 @@ import (
 )
 
 func TestLoadKeysText(t *testing.T) {
-	km := DefaultKeymap()
-	n, errs := km.LoadKeysText(strings.NewReader(`
+	km, pkm := DefaultKeymap(), DefaultPrefixKeymap()
+	n, errs := loadKeysText(km, pkm, strings.NewReader(`
 # comment line
 C-q    put
 F2     execute
 C-k    -          # unbind kill-line
-Home   file-start
+Home   no-such-action
 bogus line here
 C-s
+prefix F4 zoom
+prefix o -
 `))
-	if n != 3 {
-		t.Errorf("applied %d lines; want 3", n)
+	if n != 5 {
+		t.Errorf("applied %d lines; want 5", n)
 	}
 	if len(errs) != 3 {
 		t.Fatalf("got %d errors; want 3: %v", len(errs), errs)
@@ -44,10 +46,19 @@ C-s
 	if a := km.Lookup(draw.KeyHome); a == nil || a.Name != "line-start" {
 		t.Errorf("Home = %v; want line-start (default kept after bad line)", a)
 	}
+	if a := pkm.Lookup(KF | 4); a == nil || a.Name != "zoom" {
+		t.Errorf("prefix F4 = %v; want zoom", a)
+	}
+	if a := pkm.Lookup('o'); a != nil {
+		t.Errorf("prefix o still bound to %s after unbind", a.Name)
+	}
+	if a := km.Lookup(KF | 4); a != nil {
+		t.Errorf("direct F4 bound to %s; prefix line leaked into the direct map", a.Name)
+	}
 }
 
 func TestLoadKeysFile(t *testing.T) {
-	defer func() { global.keymap = DefaultKeymap() }()
+	defer func() { global.keymap, global.prefixKeymap = DefaultKeymap(), DefaultPrefixKeymap() }()
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "keys")

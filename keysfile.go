@@ -18,7 +18,8 @@ import (
 //
 // Format: one binding per line, "key action", where key is spelled as
 // ParseKey accepts ("C-s", "Cmd-s", "Left", "F3", "0xF800") and action is a
-// name from actionTable. "key -" removes a binding so the key is typed as
+// name from actionTable. "prefix key action" binds the key after the
+// Ctrl-B prefix instead. "key -" removes a binding so the key is typed as
 // text again. Blank lines are ignored and # starts a comment that runs to
 // the end of the line. The file
 // is applied on top of the defaults, so it only needs to list changes.
@@ -41,10 +42,11 @@ func keysFilePath() string {
 	return filepath.Join(home, ".config", "edwood", "keys")
 }
 
-// LoadKeysText applies the bindings read from r to km. Lines that cannot
-// be applied are reported in errs, one per line, and skipped; the valid
-// lines are still applied. n is the number of lines applied.
-func (km Keymap) LoadKeysText(r io.Reader) (n int, errs []error) {
+// loadKeysText applies the bindings read from r to km (direct keys) and
+// pkm (keys after the Ctrl-B prefix). Lines that cannot be applied are
+// reported in errs, one per line, and skipped; the valid lines are still
+// applied. n is the number of lines applied.
+func loadKeysText(km, pkm Keymap, r io.Reader) (n int, errs []error) {
 	sc := bufio.NewScanner(r)
 	for lineno := 1; sc.Scan(); lineno++ {
 		line := sc.Text()
@@ -56,16 +58,20 @@ func (km Keymap) LoadKeysText(r io.Reader) (n int, errs []error) {
 			continue
 		}
 		fields := strings.Fields(line)
+		target := km
+		if len(fields) == 3 && fields[0] == "prefix" {
+			target, fields = pkm, fields[1:]
+		}
 		if len(fields) != 2 {
-			errs = append(errs, fmt.Errorf("line %d: want \"key action\", got %q", lineno, line))
+			errs = append(errs, fmt.Errorf("line %d: want \"key action\" or \"prefix key action\", got %q", lineno, line))
 			continue
 		}
 		key, action := fields[0], fields[1]
 		var err error
 		if action == "-" {
-			err = km.Unbind(key)
+			err = target.Unbind(key)
 		} else {
-			err = km.Bind(key, action)
+			err = target.Bind(key, action)
 		}
 		if err != nil {
 			errs = append(errs, fmt.Errorf("line %d: %v", lineno, err))
@@ -79,24 +85,36 @@ func (km Keymap) LoadKeysText(r io.Reader) (n int, errs []error) {
 	return n, errs
 }
 
-// loadKeysFile builds a keymap from the defaults plus the keys file at path
-// and installs it as global.keymap. A missing file is not an error. The
+// loadKeysFile builds the direct and prefix keymaps from the defaults plus
+// the keys file at path and installs them in global. A missing file is not an error. The
 // number of applied lines and any per-line errors are returned for the
 // caller to report.
 func loadKeysFile(path string) (n int, errs []error) {
-	km := DefaultKeymap()
+	km, pkm := DefaultKeymap(), DefaultPrefixKeymap()
 	f, err := os.Open(path)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			errs = append(errs, err)
 		}
-		global.keymap = km
+		global.keymap, global.prefixKeymap = km, pkm
 		return 0, errs
 	}
 	defer f.Close()
-	n, errs = km.LoadKeysText(f)
-	global.keymap = km
+	n, errs = loadKeysText(km, pkm, f)
+	global.keymap, global.prefixKeymap = km, pkm
 	return n, errs
+}
+
+// bindingsDoc lists the direct and prefix bindings in keys file syntax.
+func bindingsDoc() string {
+	var sb strings.Builder
+	sb.WriteString(global.keymap.String())
+	for _, line := range strings.Split(strings.TrimRight(global.prefixKeymap.String(), "\n"), "\n") {
+		if line != "" {
+			sb.WriteString("prefix " + line + "\n")
+		}
+	}
+	return sb.String()
 }
 
 // actionsDoc lists every action with its description, sorted by name.
@@ -143,7 +161,7 @@ func keysCommandImpl(_ *Text, _ *Text, argt *Text, _, _ bool, arg string) {
 	path := keysFilePath()
 	switch arg {
 	case "":
-		warning(nil, "Keys: bindings (file %s):\n%s", path, global.keymap.String())
+		warning(nil, "Keys: bindings (file %s):\n%s", path, bindingsDoc())
 	case "reload":
 		n, errs := loadKeysFile(path)
 		for _, err := range errs {
