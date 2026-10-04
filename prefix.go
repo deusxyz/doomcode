@@ -8,8 +8,12 @@ import (
 )
 
 // The Ctrl-B prefix, in the manner of tmux: Ctrl-B followed by one key runs
-// an action from the prefix keymap on the focused text. Ctrl-B Ctrl-B types
-// a literal Ctrl-B, Esc or an unbound key cancels. There is no timeout.
+// an action from the prefix keymap on the focused text. Esc or an unbound
+// key cancels. There is no timeout. Unlike tmux, Ctrl-B Ctrl-B does not type
+// a literal Ctrl-B: devdraw delivers key auto-repeat as plain keystrokes, so
+// holding Ctrl-B a little too long would otherwise insert control characters
+// and leave the prefix in a random state. A repeated Ctrl-B keeps the prefix
+// armed.
 //
 // Keyboard focus is explicit: the last text clicked or typed into, which is
 // what globals.barttext already records for the -b flag. Prefix navigation
@@ -30,11 +34,10 @@ type prefixState struct {
 type prefixResult int
 
 const (
-	prefixPass    prefixResult = iota // not for us: deliver r as ordinary typing
-	prefixArmed                       // r was Ctrl-B: wait for the next key
-	prefixCancel                      // the prefix was dropped without an action
-	prefixRun                         // run the returned action on the focus
-	prefixLiteral                     // Ctrl-B Ctrl-B: type a literal Ctrl-B
+	prefixPass   prefixResult = iota // not for us: deliver r as ordinary typing
+	prefixArmed                      // r was Ctrl-B: wait for the next key
+	prefixCancel                     // the prefix was dropped without an action
+	prefixRun                        // run the returned action on the focus
 )
 
 // feed advances the machine with r and reports what to do.
@@ -46,13 +49,14 @@ func (p *prefixState) feed(r rune, km Keymap) (prefixResult, *Action) {
 		}
 		return prefixPass, nil
 	}
-	p.armed = false
 	switch r {
-	case prefixKey:
-		return prefixLiteral, nil
+	case prefixKey: // auto-repeat of the prefix key: stay armed
+		return prefixArmed, nil
 	case 0x1b: // Esc
+		p.armed = false
 		return prefixCancel, nil
 	}
+	p.armed = false
 	if a := km.Lookup(r); a != nil {
 		return prefixRun, a
 	}

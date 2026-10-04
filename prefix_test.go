@@ -23,8 +23,12 @@ func TestPrefixStateFeed(t *testing.T) {
 		t.Fatalf("Ctrl-B Left: %v %v armed=%v; want run focus-left", res, a, p.armed)
 	}
 	p.feed(prefixKey, km)
-	if res, _ := p.feed(prefixKey, km); res != prefixLiteral || p.armed {
-		t.Fatalf("Ctrl-B Ctrl-B: %v; want literal", res)
+	if res, _ := p.feed(prefixKey, km); res != prefixArmed || !p.armed {
+		t.Fatalf("Ctrl-B Ctrl-B (auto-repeat): %v armed=%v; want still armed", res, p.armed)
+	}
+	// ...and the action after the repeats still runs.
+	if res, a := p.feed('o', km); res != prefixRun || a == nil || a.Name != "focus-next" {
+		t.Fatalf("Ctrl-B Ctrl-B o: %v %v; want run focus-next", res, a)
 	}
 	p.feed(prefixKey, km)
 	if res, _ := p.feed(0x1b, km); res != prefixCancel || p.armed {

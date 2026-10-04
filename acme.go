@@ -448,8 +448,6 @@ func keyboardthread(g *globals, display draw.Display) {
 					g.runPrefixAction(a)
 					display.Flush()
 					goto next
-				case prefixLiteral:
-					display.SetCursor(nil)
 				}
 				typetext = g.row.Type(r, g.mouse.Point)
 				t = typetext
