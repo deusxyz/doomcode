@@ -1,0 +1,96 @@
+# Процесс разработки и правила кода
+
+Дата: 2026-10-05. Относится к форку Edwood в `~/projects/justcode/edwood` и к документам в `~/projects/justcode/docs`.
+
+## 1. Устройство репозиториев
+
+```
+~/projects/justcode/            рабочий каталог проекта (пока без git)
+  docs/                         спецификации и решения, на русском, нумерованные
+  bin/edwood                    свежая сборка для ручной проверки (не в git)
+  CLAUDE.md                     инструкции для Claude по этому проекту
+  edwood/                       клон Edwood, здесь живёт код
+  devdraw/                      форк Go-devdraw (9fans.net/go/cmd/devdraw), отдельный модуль; сборка в bin/devdraw
+~/projects/plan9                plan9port, справочник и источник devdraw/9p/fontsrv
+~/projects/9fans/go             9fans.net/go, в т.ч. Go-devdraw (понадобится в фазе 2)
+```
+
+Git-remotes в `edwood/`:
+
+- `upstream` = `https://github.com/rjkroege/edwood.git` (уже настроен, ветка `master`).
+- `origin` = форк на GitHub под вашим аккаунтом. **Его создаёте вы** (кнопка Fork на github.com/rjkroege/edwood), затем присылаете URL, я добавлю remote и выставлю `push.default`. До этого вся работа идёт локально, ничего не теряется.
+
+Почему форк на GitHub, а не только локальный клон: резервная копия, CI из коробки (в репозитории уже есть `.github/workflows/edwood.yml` с gofmt, vet, staticcheck, misspell, тестами на трёх ОС), и возможность отправить часть изменений upstream pull-request'ом, если захотим.
+
+Имя форка пока оставляем `edwood`, путь модуля `github.com/rjkroege/edwood` **не меняем**: переименование модуля трогает каждый файл и сделает слияние с upstream невозможным. Переименуем, если проект разойдётся с Edwood окончательно; это отдельное решение.
+
+## 2. Ветки и слияние с upstream
+
+- `master` — зеркало `upstream/master`, в него не коммитим напрямую.
+- `main` — наша интеграционная ветка (создаётся при первом слиянии фичи). В ней всегда зелёные тесты и работающая сборка.
+- Фичи — в ветках по разделам спецификации: `keys/phase1`, `keys/prefix`, `keys/config`, `style/frame`, `style/fs`, `fmt/put`, `devdraw/modkeys`.
+- Раз в неделю или перед началом новой фичи: `git fetch upstream && git rebase upstream/master` для фичевых веток, merge в `main`. Конфликты решаем сразу, пока маленькие.
+- Коммиты маленькие и атомарные: один коммит — одно изменение поведения с тестом. Сообщение на английском в стиле Go: `text: move the cursor by line on Up/Down`, тело поясняет «почему», ссылается на раздел спецификации (`docs/03-keyboard-spec.md §2`).
+- Пуш и pull-request — только по вашей команде.
+
+## 3. Разделение труда
+
+| Шаг | Кто |
+|---|---|
+| Спецификация раздела, открытые вопросы | Claude пишет, вы решаете |
+| Реализация в фичевой ветке, тесты, lint | Claude |
+| Сборка в `~/projects/justcode/bin/edwood`, инструкция «что потрогать» | Claude |
+| Ручная проверка, замечания | вы |
+| Правки по замечаниям, обновление спецификации, если решение изменилось | Claude |
+| Коммит/merge в `main` после приёмки | Claude по вашей команде |
+
+Критерий готовности фичи («Definition of Done»):
+
+1. Поведение описано в спецификации в `docs/`, расхождения с Acme перечислены там же.
+2. Есть тесты на новое поведение (таблицы случаев, как в `text_keys_test.go`).
+3. `presub.sh` зелёный: `gofmt -s`, `go vet`, `staticcheck`, `misspell`, `go test -race ./...`.
+4. Ручная проверка пройдена вами.
+5. Существующие клиенты acme(4) не сломаны: `win`, `acme-lsp`, `acmego` запускаются и работают.
+
+## 4. Правила кода
+
+Берём то, что уже принято в Edwood, и добавляем немного своего.
+
+**Инструменты (как в CI upstream):** `gofmt -s`, `go vet`, `staticcheck -checks inherit,-U1000,-SA4003`, `misspell`, `go test -race`. Запуск одной командой — `./presub.sh`. Версия Go — из `go.mod` (сейчас 1.24+; локально 1.27).
+
+**Стиль:** [Effective Go](https://go.dev/doc/effective_go) и [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments) обязательны; [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md) — для спорных случаев. Идентификаторы, комментарии и сообщения коммитов — на английском (код живёт рядом с upstream). Документы в `docs/` — на русском.
+
+**Архитектурные правила проекта:**
+
+1. **Совместимость acme(4) неприкосновенна.** Существующие файлы (`addr body ctl data event tag xdata index log new cons`) не меняют семантику. Новое — только новые файлы (`style`, `keys`).
+2. **Поведение мыши Acme не меняется.** Все клавиатурные функции добавляются рядом, а не вместо.
+3. **Таблица вместо `switch`.** Привязки клавиш — данные (`map[rune]Action`), а не ветки кода. Первый срез фазы 1 сделан прямо в `Type()`, чтобы быстро пощупать; рефакторинг в таблицу — следующий шаг, до добавления префикса.
+4. **Конфиг вместо констант.** Всё, что пользователь захочет поменять (клавиши, перенос мыши, таймаут), читается из файла; в коде только значения по умолчанию.
+5. **Никаких новых глобальных переменных** вне существующей структуры `globals`.
+6. **Без cgo в ядре.** Edwood чистый Go; tree-sitter, если понадобится внутри, обсуждаем отдельно.
+7. **Новая зависимость — отдельное решение.** Сейчас их мало, пусть так и остаётся.
+8. **Каждое отличие от Acme записано.** Файл `docs/90-differences-from-acme.md` ведётся как журнал: что изменили, почему, как вернуть старое поведение (если можно).
+9. **Тесты через существующие леса.** `MakeWindowScaffold` и `dumpfile.Content` дают окно с мок-фреймом без дисплея; тесты не требуют devdraw.
+10. **Не чиним upstream походя.** Нашли баг в коде Edwood, не связанный с задачей — отдельная ветка и, по возможности, PR в upstream, а не правка внутри фичи. (Пример: свежий staticcheck ругается на `xfid.go:983` SA4006 — это upstream, не трогаем в `keys/phase1`.)
+
+## 5. Как собрать и запустить
+
+```bash
+cd ~/projects/justcode/edwood && go build -o ../bin/edwood . && ./presub.sh
+```
+
+Форк devdraw:
+
+```bash
+cd ~/projects/justcode/devdraw && go build -o ../bin/devdraw .
+```
+
+Запуск рядом с работающим plan9port acme (у них одно имя сервиса `acme`, поэтому отдельное пространство имён):
+
+```bash
+cd ~/projects/justcode && PLAN9=~/projects/plan9 PATH=$PATH:~/projects/plan9/bin NAMESPACE=/tmp/ns.edwood DEVDRAW=$PWD/bin/devdraw ./bin/edwood -f $PLAN9/font/lucsans/euro.8.font -F $PLAN9/font/lucm/unicode.9.font docs/
+```
+
+Клиентам (`win`, `9p`, `acme-lsp`) нужен тот же `NAMESPACE=/tmp/ns.edwood`. `DEVDRAW` указывает на наш форк: без него будет взят `devdraw` из PATH (у вас это Go-devdraw из `~/go/bin`, без автоповтора и Cmd).
+
+Открытый вопрос: `docs/` и `devdraw/` пока не под git. Варианты: сделать `justcode` репозиторием (с `edwood/` в `.gitignore`, как вложенный репозиторий) или завести отдельный форк 9fans.net/go. Первое проще.

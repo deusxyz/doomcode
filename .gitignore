@@ -1,0 +1,5 @@
+# Edwood fork is its own repository (remote origin = deusxyz/edwood)
+/edwood/
+# local builds
+/bin/
+.DS_Store
