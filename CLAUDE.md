@@ -6,14 +6,15 @@
 
 - `docs/` — спецификации и решения, читать перед работой над разделом: `01` обзор Acme, `02` рамки и инварианты, `03` клавиатура, `04` процесс и правила кода, `90` журнал отличий от Acme.
 - `edwood/` — клон Edwood, remote `upstream` = rjkroege/edwood. Код правим только здесь, в фичевых ветках (`keys/*`, `style/*`, `fmt/*`, `devdraw/*`).
-- `~/projects/9fans/go` — клон форка 9fans-go (origin = deusxyz/9fans-go, upstream = 9fans/go), ветка `devdraw/keys`: правки Go-devdraw делаются там, путь модуля `9fans.net/go` не менять.
+- `~/projects/9fans/go` — клон форка 9fans-go (origin = deusxyz/9fans-go, upstream = 9fans/go), ветка `devdraw/keys`: правки Go-devdraw только для upstream; в работе Go-devdraw НЕ используется (медленный, без курсоров/колеса, неверные Backspace/Delete).
+- Рабочий devdraw — C-версия plan9port `$PLAN9/bin/devdraw`; фаза 2 (модификаторы) — патч plan9port в форке.
 - `bin/edwood`, `bin/devdraw` — сборки для ручной проверки, не в git.
-- `~/projects/plan9` (plan9port) — справочные исходники, только читать.
+- `~/projects/plan9` (plan9port) — справочные исходники и рабочий devdraw; пока только читать.
 
 ## Команды
 
-- Сборка: `./build.sh` (edwood + devdraw в `bin/`); проверка: `cd edwood && ./presub.sh` (gofmt -s, vet, staticcheck, misspell, go test -race).
-- Запуск: `./run.sh <файлы>`; он выставляет `DEVDRAW=bin/devdraw` и `NAMESPACE=/tmp/ns.edwood`, потому что у пользователя может параллельно работать plan9port acme с сервисом `acme`. Его не трогать.
+- Сборка: `./build.sh` (edwood в `bin/`); проверка: `cd edwood && ./presub.sh` (gofmt -s, vet, staticcheck, misspell, go test -race).
+- Запуск: `./run.sh <файлы>`; он выставляет `DEVDRAW=$PLAN9/bin/devdraw` и `NAMESPACE=/tmp/ns.edwood`, потому что у пользователя может параллельно работать plan9port acme с сервисом `acme`. Его не трогать.
 
 ## Правила
 

@@ -222,7 +222,7 @@ Cmd-r            redo
 2. Перенос мыши к окну фокуса — **всегда**, независимо от `-b`.
 3. Префикс `Ctrl-B` — **без таймаута**, как в tmux.
 4. `Ctrl-D` — «выделить слово; повтор ищет следующее вхождение».
-5. Фаза 2 — поставлять **Go-devdraw** (форк `9fans.net/go/cmd/devdraw`) вместе с Edwood, plan9port не патчить.
+5. Фаза 2 — поставлять **Go-devdraw** (форк `9fans.net/go/cmd/devdraw`) вместе с Edwood, plan9port не патчить. **Пересмотрено 2026-10-05, см. §15.**
 
 ## 13. macOS: слой Cmd
 
@@ -248,4 +248,10 @@ Cmd-r            redo
 | prefix Space (якорь), b (блок), Tab (сдвиг влево); Ctrl-D, Ctrl-L, Ctrl-F, Ctrl-G, Ctrl-N, Tab-сдвиг выделения | следующий срез |
 | Фаза 2: модификаторы спецклавиш через Go-devdraw (`0xF200`) | после фазы 1 |
 
-**Форк Go-devdraw** — ветка `devdraw/keys` в github.com/deusxyz/9fans-go (коммит `338bc60`): автоповтор клавиш и Cmd+символ. Сборка обоих бинарников — `build.sh`, запуск — `run.sh`.
+**Devdraw:** в работе используется C-devdraw из plan9port (`run.sh` ставит `DEVDRAW=$PLAN9/bin/devdraw`). Форк Go-devdraw (ветка `devdraw/keys` в github.com/deusxyz/9fans-go, коммиты `338bc60`, `3495720`: автоповтор, Cmd, фильтр модификаторов) остаётся как вклад в upstream, но не как наш рантайм, см. §15. Сборка — `build.sh`, запуск — `run.sh`.
+
+## 15. Пересмотр решения о devdraw (2026-10-05)
+
+Сравнение на практике показало, что Go-devdraw из 9fans.net/go непригоден как рантайм без большой доработки: заметно медленная отрисовка (полная перезаливка буфера через shiny), не реализованы курсоры (`rpc_setcursor` — заглушка, а у драйвера shiny нет API курсоров), не обрабатывается колесо мыши, Backspace приходит как 0x7F (Delete), а Forward Delete не приходит вовсе. Всё это в C-devdraw из plan9port давно работает, включая автоповтор и Cmd-клавиши.
+
+Решение: **база для фазы 2 — C-devdraw из plan9port.** Расширение протокола (§7, коды `0xF200`, включение через `DEVDRAW_MODKEYS=1`) делается патчем в `src/cmd/devdraw/mac-screen.m` (`doCommandBySelector`: читать `modifierFlags` перед `keycvt`) и `x11-screen.c`, в форке github.com/9fans/plan9port. Объём патча — десятки строк, оба файла уже прочитаны. Форк 9fans-go сохраняем ради PR в upstream. Пункт 5 решений от 2026-10-05 отменён.

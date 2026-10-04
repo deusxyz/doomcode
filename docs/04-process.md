@@ -13,7 +13,8 @@
   build.sh, run.sh              сборка обоих бинарников в bin/ и запуск с нужным окружением
 ~/projects/plan9                plan9port, справочник и источник devdraw/9p/fontsrv
 ~/projects/9fans/go             клон форка 9fans.net/go (origin = deusxyz/9fans-go, upstream = 9fans/go);
-                                ветка devdraw/keys содержит наши правки cmd/devdraw
+                                ветка devdraw/keys — правки cmd/devdraw для upstream; в работе не используется
+~/projects/plan9                plan9port: справочник и рабочий devdraw ($PLAN9/bin/devdraw); для фазы 2 понадобится форк 9fans/plan9port
 ```
 
 Git-remotes в `edwood/`:
@@ -80,7 +81,7 @@ Git-remotes в `edwood/`:
 cd ~/projects/justcode/edwood && go build -o ../bin/edwood . && ./presub.sh
 ```
 
-Оба бинарника одной командой (devdraw собирается из клона форка 9fans-go, путь можно переопределить переменной `NINEFANS_GO`):
+Сборка Edwood (с `--go-devdraw` соберёт и Go-devdraw из форка 9fans-go для экспериментов):
 
 ```bash
 ~/projects/justcode/build.sh
@@ -92,8 +93,8 @@ cd ~/projects/justcode/edwood && go build -o ../bin/edwood . && ./presub.sh
 ~/projects/justcode/run.sh ~/projects/justcode/docs/
 ```
 
-Скрипт выставляет `PLAN9`, `NAMESPACE=/tmp/ns.edwood` и `DEVDRAW=bin/devdraw`; остальные аргументы уходят Edwood.
+Скрипт выставляет `PLAN9`, `NAMESPACE=/tmp/ns.edwood` и `DEVDRAW=$PLAN9/bin/devdraw` (C-devdraw из plan9port; Go-devdraw отвергнут, см. спецификацию клавиатуры §15); остальные аргументы уходят Edwood.
 
 Клиентам (`win`, `9p`, `acme-lsp`) нужен тот же `NAMESPACE=/tmp/ns.edwood`. `DEVDRAW` указывает на наш форк: без него будет взят `devdraw` из PATH (у вас это Go-devdraw из `~/go/bin`, без автоповтора и Cmd).
 
-Правки devdraw живут в форке 9fans-go (ветка `devdraw/keys`), а не в justcode: так их можно отправить в upstream 9fans/go. Путь модуля `9fans.net/go` в форке не меняется; потребители при необходимости подключают форк через `replace 9fans.net/go => github.com/deusxyz/9fans-go <ревизия>`.
+Правки Go-devdraw живут в форке 9fans-go (ветка `devdraw/keys`) как вклад в upstream 9fans/go; рабочий devdraw — C-версия из plan9port, её правки для фазы 2 пойдут в форк 9fans/plan9port.
