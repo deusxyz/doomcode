@@ -52,6 +52,9 @@ type SelectScrollUpdater interface {
 	InsertByte([]byte, int) bool
 	// InsertStyled is Insert with a style index per rune (see StyleColours).
 	InsertStyled([]rune, []uint8, int) bool
+	// SetStyleTable installs the colours for style indices; index 0 is
+	// always the frame's own text and background colours.
+	SetStyleTable([]StyleColours)
 
 	IsLastLineFull() bool
 	Rect() image.Rectangle
@@ -112,10 +115,6 @@ type Frame interface {
 	// Restyle changes the styles of the runes in [p0,p1) to styles
 	// (one index per rune) and repaints them; the text is unchanged.
 	Restyle(p0, p1 int, styles []uint8)
-
-	// SetStyleTable installs the colours for style indices. Index 0 is
-	// always the frame's own text and background colours.
-	SetStyleTable([]StyleColours)
 
 	// Redraw redraws the background of the Frame where the Frame is inside
 	// enclosing. Frame is responsible for drawing all of the pixels inside

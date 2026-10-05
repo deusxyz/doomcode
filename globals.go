@@ -66,8 +66,9 @@ type globals struct {
 
 	WinID int
 
-	keymap       Keymap // key bindings in effect, see keys.go
-	prefixKeymap Keymap // bindings after Ctrl-B, see prefix.go
+	styles       *theme.StyleSet // style names -> frame indices, see textstyle.go
+	keymap       Keymap          // key bindings in effect, see keys.go
+	prefixKeymap Keymap          // bindings after Ctrl-B, see prefix.go
 
 	// Keyboard focus, see prefix.go. focusSticky makes typing go to
 	// barttext even without -b, from a prefix navigation until the mouse

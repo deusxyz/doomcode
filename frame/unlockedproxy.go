@@ -68,3 +68,8 @@ func (up *selectscrollupdaterimpl) InsertStyled(r []rune, styles []uint8, p0 int
 	f := (*frameimpl)(up)
 	return f.insertimpl(r, styles, p0)
 }
+
+func (up *selectscrollupdaterimpl) SetStyleTable(t []StyleColours) {
+	f := (*frameimpl)(up)
+	f.styles = t
+}

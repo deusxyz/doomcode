@@ -589,7 +589,11 @@ func (t *Text) Inserted(oq0 file.OffsetTuple, b []byte, nr int) {
 		t.org += nr
 	} else {
 		if t.fr != nil && q0 <= t.org+(t.fr.GetFrameFillStatus().Nchars) {
-			t.fr.InsertByte(b, q0-t.org)
+			if st := t.styleIndices(t.fr, q0, nr); st != nil {
+				t.fr.InsertStyled([]rune(string(b)), st, q0-t.org)
+			} else {
+				t.fr.InsertByte(b, q0-t.org)
+			}
 		}
 	}
 
@@ -691,7 +695,14 @@ func (t *Text) fill(fr frame.SelectScrollUpdater) error {
 			}
 		}
 
-		if lastlinefull := fr.Insert(rp[:i], fr.GetFrameFillStatus().Nchars); nl == 0 || lastlinefull {
+		at := fr.GetFrameFillStatus().Nchars
+		var lastlinefull bool
+		if st := t.styleIndices(fr, t.org+at, i); st != nil {
+			lastlinefull = fr.InsertStyled(rp[:i], st, at)
+		} else {
+			lastlinefull = fr.Insert(rp[:i], at)
+		}
+		if nl == 0 || lastlinefull {
 			break
 		}
 	}
