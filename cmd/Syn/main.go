@@ -3,6 +3,7 @@
 // Usage:
 //
 //	Syn [-v] [-all] [-delay 100ms]
+//	Syn -dump file.go
 //
 // Syn watches the acme log for windows whose names end in a suffix it
 // knows (.go, .md), reads their bodies, and writes styled spans to each
@@ -35,12 +36,26 @@ var (
 	verbose = flag.Bool("v", false, "log what is highlighted")
 	all     = flag.Bool("all", false, "also style variables, operators and punctuation")
 	delay   = flag.Duration("delay", 100*time.Millisecond, "pause after the last edit before re-highlighting")
+	dump    = flag.String("dump", "", "highlight this file, print the style write to stdout and exit (for debugging)")
 )
 
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
 	log.SetOutput(os.Stderr)
+
+	if *dump != "" {
+		lang := languageFor(*dump)
+		if lang == nil {
+			log.Fatalf("Syn: %s: unknown language", *dump)
+		}
+		text, err := os.ReadFile(*dump)
+		if err != nil {
+			log.Fatalf("Syn: %v", err)
+		}
+		os.Stdout.WriteString(styleText(text, highlight(lang, text, *all)))
+		return
+	}
 
 	var mu sync.Mutex
 	workers := map[int]*worker{}
