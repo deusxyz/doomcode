@@ -234,7 +234,7 @@ func (d *document) flush(full, all bool) string {
 	tr := newRuneCounter(d.text)
 	q0, q1 := tr.at(int(lo)), tr.at(int(hi))
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "clear %d %d\n", q0, q1)
+	sb.WriteString(clearLine(q0, q1))
 	tr = newRuneCounter(d.text)
 	for _, sp := range spans {
 		a, b := tr.at(int(sp.start)), tr.at(int(sp.end))

@@ -1,62 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"time"
 
 	"9fans.net/go/acme"
-	"9fans.net/go/plan9"
-	"9fans.net/go/plan9/client"
+	"justcode/internal/acmefs"
 )
-
-// The acme client library only opens the file names it knows, so style and
-// changes are opened on our own mount of the acme service.
-var (
-	fsysOnce sync.Once
-	fsys     *client.Fsys
-	fsysErr  error
-)
-
-func openWinFile(id int, name string, mode uint8) (*client.Fid, error) {
-	fsysOnce.Do(func() { fsys, fsysErr = client.MountService("acme") })
-	if fsysErr != nil {
-		return nil, fsysErr
-	}
-	return fsys.Open(fmt.Sprintf("%d/%s", id, name), mode)
-}
-
-// writeStyle writes st to a style fid in pieces that end at line
-// boundaries: 9P splits large writes, and each piece the editor receives
-// must parse on its own. The first piece carries the "clear".
-func writeStyle(f *client.Fid, st string) error {
-	const max = 4096
-	for len(st) > 0 {
-		n := len(st)
-		if n > max {
-			n = max
-			for n > 0 && st[n-1] != '\n' {
-				n--
-			}
-			if n == 0 { // a single line longer than max: send it whole
-				n = len(st)
-				for i := 0; i < len(st); i++ {
-					if st[i] == '\n' {
-						n = i + 1
-						break
-					}
-				}
-			}
-		}
-		if _, err := f.Write([]byte(st[:n])); err != nil {
-			return err
-		}
-		st = st[n:]
-	}
-	return nil
-}
 
 // A worker keeps one window's style file in step with its body: it
 // highlights the body once, then follows the changes file, applies each
@@ -88,13 +39,13 @@ func (wk *worker) run() {
 		return
 	}
 	defer w.CloseFiles()
-	styleFid, err := openWinFile(wk.id, "style", plan9.OWRITE)
+	styleFid, err := acmefs.OpenStyle(wk.id)
 	if err != nil {
 		log.Printf("Syn: window %d: %v (is this Edwood with style support?)", wk.id, err)
 		return
 	}
 	defer styleFid.Close()
-	changesFid, err := openWinFile(wk.id, "changes", plan9.OREAD)
+	changesFid, err := acmefs.OpenChanges(wk.id)
 	if err != nil {
 		log.Printf("Syn: window %d: %v", wk.id, err)
 		return
@@ -127,7 +78,7 @@ func (wk *worker) run() {
 		}
 		doc = d
 		st := doc.flush(true, *all)
-		if err := writeStyle(styleFid, st); err != nil {
+		if err := acmefs.WriteStyle(styleFid, st); err != nil {
 			log.Printf("Syn: window %d: style: %v", wk.id, err)
 			return false
 		}
@@ -223,7 +174,7 @@ func (wk *worker) run() {
 			if st == "" {
 				break
 			}
-			if err := writeStyle(styleFid, st); err != nil {
+			if err := acmefs.WriteStyle(styleFid, st); err != nil {
 				log.Printf("Syn: window %d: style: %v", wk.id, err)
 				return
 			}

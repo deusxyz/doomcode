@@ -26,8 +26,14 @@ func (m *styleModel) apply(write string) {
 		case f[0] == "clear":
 			q0, _ := strconv.Atoi(f[1])
 			q1, _ := strconv.Atoi(f[2])
+			only := map[string]bool{}
+			for _, n := range f[3:] {
+				only[n] = true
+			}
 			for i := q0; i < q1 && i < len(m.styles); i++ {
-				m.styles[i] = ""
+				if len(only) == 0 || only[m.styles[i]] {
+					m.styles[i] = ""
+				}
 			}
 		default:
 			q0, _ := strconv.Atoi(f[0])

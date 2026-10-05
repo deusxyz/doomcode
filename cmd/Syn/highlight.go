@@ -100,12 +100,23 @@ func walk(n *tree_sitter.Node, f func(*tree_sitter.Node)) {
 	}
 }
 
+// syntaxStyles are the style names Syn writes. Its clears name them, so
+// marks written by other programs (Diag's error/warning/info/hint) stay.
+var syntaxStyles = []string{"comment", "keyword", "string", "number", "type", "function", "constant",
+	"preproc", "heading", "emphasis", "link", "variable", "operator", "punctuation"}
+
+// clearLine is "clear q0 q1" restricted to Syn's own style names.
+func clearLine(q0, q1 int) string {
+	return fmt.Sprintf("clear %d %d %s\n", q0, q1, strings.Join(syntaxStyles, " "))
+}
+
 // styleText renders spans as the contents of a style file write: a clear
-// followed by one "q0 q1 name" line per span, with the byte offsets of the
-// spans converted to rune offsets in text.
+// of Syn's styles over the whole text followed by one "q0 q1 name" line
+// per span, with the byte offsets of the spans converted to rune offsets
+// in text.
 func styleText(text []byte, spans []span) string {
 	var sb strings.Builder
-	sb.WriteString("clear\n")
+	sb.WriteString(clearLine(0, utf8.RuneCount(text)))
 	// One sweep over the text converts byte offsets to rune offsets; the
 	// spans are sorted by start, the ends are looked up with a second
 	// cursor that may lag behind.

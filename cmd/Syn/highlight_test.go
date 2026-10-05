@@ -82,13 +82,13 @@ func TestStyleTextRuneOffsets(t *testing.T) {
 	src := []byte("// привет\nx := 1\n")
 	spans := []span{{start: 0, end: uint(len("// привет")), style: "comment"}, {start: uint(len("// привет\nx := ")), end: uint(len("// привет\nx := 1")), style: "number"}}
 	got := styleText(src, spans)
-	want := "clear\n0 9 comment\n15 16 number\n"
+	want := clearLine(0, 17) + "0 9 comment\n15 16 number\n"
 	if got != want {
 		t.Errorf("styleText = %q; want %q", got, want)
 	}
 	// Spans beyond the text are clamped, empty ones dropped.
 	got = styleText([]byte("ab"), []span{{start: 1, end: 10, style: "x"}, {start: 2, end: 2, style: "y"}})
-	if got != "clear\n1 2 x\n" {
+	if got != clearLine(0, 2)+"1 2 x\n" {
 		t.Errorf("clamped styleText = %q", got)
 	}
 }
