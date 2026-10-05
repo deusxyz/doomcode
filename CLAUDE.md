@@ -13,7 +13,7 @@
 
 ## Команды
 
-- Сборка: `./build.sh` (edwood в `bin/`); проверка: `cd edwood && ./presub.sh` (gofmt -s, vet, staticcheck, misspell, go test -race).
+- Сборка: `./build.sh` (edwood в `bin/`); проверка: `cd edwood && ./presub.sh` (gofmt -s, vet, staticcheck, misspell, go test -race). Тестам нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе TestRunproc/TestMntDecRef падают — это окружение, не flaky.
 - Запуск: `./run.sh <файлы>`; он выставляет `DEVDRAW=$PLAN9/bin/devdraw` и `NAMESPACE=/tmp/ns.edwood`, потому что у пользователя может параллельно работать plan9port acme с сервисом `acme`. Его не трогать.
 
 ## Правила

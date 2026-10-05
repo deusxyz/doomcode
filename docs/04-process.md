@@ -58,7 +58,7 @@ Git-remotes в `edwood/`:
 
 Берём то, что уже принято в Edwood, и добавляем немного своего.
 
-**Инструменты (как в CI upstream):** `gofmt -s`, `go vet`, `staticcheck -checks inherit,-U1000,-SA4003`, `misspell`, `go test -race`. Запуск одной командой — `./presub.sh`. Версия Go — из `go.mod` (сейчас 1.24+; локально 1.27).
+**Инструменты (как в CI upstream):** `gofmt -s`, `go vet`, `staticcheck -checks inherit,-U1000,-SA4003`, `misspell`, `go test -race`. Запуск одной командой — `./presub.sh`. Версия Go — из `go.mod` (сейчас 1.24+; локально 1.27). **Тестам нужна оболочка:** `TestRunproc` и `TestMntDecRef` запускают команды через `rc`; либо `PATH` с `$PLAN9/bin`, либо `acmeshell=sh` в окружении (так делает CI). Без этого они падают с «rc: executable file not found», это не flaky-тесты.
 
 **Стиль:** [Effective Go](https://go.dev/doc/effective_go) и [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments) обязательны; [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md) — для спорных случаев. Идентификаторы, комментарии и сообщения коммитов — на английском (код живёт рядом с upstream). Документы в `docs/` — на русском.
 
