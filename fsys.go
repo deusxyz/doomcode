@@ -78,6 +78,8 @@ var dirtabw = []*DirTab{
 	{"wrsel", plan9.QTFILE, QWwrsel, 0200},
 	{"tag", plan9.QTAPPEND, QWtag, 0600 | plan9.DMAPPEND},
 	{"xdata", plan9.QTFILE, QWxdata, 0600},
+	{"style", plan9.QTFILE, QWstyle, 0600},
+	{"changes", plan9.QTFILE, QWchanges, 0400},
 }
 
 // windowDirTab returns the DirTab entry for window directory for the window with given id.

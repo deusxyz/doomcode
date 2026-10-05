@@ -64,6 +64,14 @@ func xfidflush(x *Xfid) {
 				w.Unlock()
 				goto out
 			}
+			for _, r := range w.changereaders {
+				if r.x != nil && r.x.fcall.Tag == x.fcall.Oldtag {
+					r.x.flushed = true
+					r.wake(false)
+					w.Unlock()
+					goto out
+				}
+			}
 			w.Unlock()
 		}
 	}
@@ -94,8 +102,11 @@ func xfidopen(x *Xfid) {
 				w.limit = Range{-1, -1}
 			}
 			w.nopen[q]++
-		case QWdata, QWxdata:
+		case QWdata, QWxdata, QWstyle:
 			w.nopen[q]++
+		case QWchanges:
+			w.nopen[q]++
+			x.f.changes = w.addChangeReader()
 		case QWevent:
 			if w.nopen[q] == 0 {
 				if !w.body.file.IsDir() && w.col != nil {
@@ -223,6 +234,12 @@ func xfidclose(x *Xfid) {
 					w.dumpdir = ""
 				}
 			}
+		case QWstyle:
+			w.nopen[q]--
+		case QWchanges:
+			w.nopen[q]--
+			w.delChangeReader(x.f.changes)
+			x.f.changes = nil
 		case QWrdsel:
 			w.rdselfd.Close()
 			w.rdselfd = nil
@@ -296,6 +313,13 @@ func xfidread(x *Xfid) {
 
 	case QWevent:
 		xfideventread(x, w)
+
+	case QWstyle:
+		ninep.ReadString(&fc, &x.fcall, styleString(w.body.file.Styles()))
+		x.respond(&fc, nil)
+
+	case QWchanges:
+		xfidchangesread(x, w)
 
 	case QWdata:
 		// BUG: what should happen if q1 > q0?
@@ -532,6 +556,9 @@ func xfidwrite(x *Xfid) {
 
 	case QWevent:
 		xfideventwrite(x, w)
+
+	case QWstyle:
+		xfidstylewrite(x, w)
 
 	case QWtag:
 		updateText(&w.tag)

@@ -622,8 +622,14 @@ func (t *Text) logInsert(oq0 file.OffsetTuple, b []byte, nr int) {
 			// TODO(rjk): Does unnecessary work making a string from r if there's no
 			// event reader.
 			t.w.Eventf("%c%d %d 0 %d %s\n", c, q0, q0+nr, nr, b)
+			if c == 'I' {
+				t.w.Changef("%c%d %d 0 %d %s\n", c, q0, q0+nr, nr, b)
+			}
 		} else {
 			t.w.Eventf("%c%d %d 0 0 \n", c, q0, q0+nr)
+			if c == 'I' {
+				t.w.Changef("%c%d %d 0 0 \n", c, q0, q0+nr)
+			}
 		}
 	}
 }
@@ -773,6 +779,9 @@ func (t *Text) logInsertDelete(q0, q1 int) {
 			c = 'D'
 		}
 		t.w.Eventf("%c%d %d 0 0 \n", c, q0, q1)
+		if c == 'D' {
+			t.w.Changef("%c%d %d 0 0 \n", c, q0, q1)
+		}
 	}
 }
 

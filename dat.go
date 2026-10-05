@@ -37,6 +37,8 @@ const (
 	QWwrsel
 	QWtag
 	QWxdata
+	QWstyle   // styled spans of the body, see xfidstyle.go
+	QWchanges // stream of body insertions and deletions, see xfidstyle.go
 	QMAX
 )
 
@@ -123,6 +125,8 @@ type Fid struct {
 	nrpart int
 	rpart  [utf8.UTFMax]byte
 	logoff int
+
+	changes *changeReader // per-open-fid queue for the changes file
 }
 
 type Xfid struct {

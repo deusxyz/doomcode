@@ -39,6 +39,8 @@ type Window struct {
 	eventx *Xfid
 	events []byte
 
+	changereaders []*changeReader // open changes files, see xfidstyle.go
+
 	owner         int // TODO(fhs): change type to rune
 	maxlines      int
 	dirnames      []string
@@ -394,6 +396,9 @@ func (w *Window) Delete() {
 		w.events = w.events[0:0]
 		w.eventx = nil
 		x.c <- nil // wake him up
+	}
+	for _, r := range w.changereaders {
+		r.wake(true)
 	}
 }
 
