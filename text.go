@@ -1642,10 +1642,16 @@ func (t *Text) setorigin(fr frame.SelectScrollUpdater, org int, exact bool, call
 		fr.Delete(0, a)
 	} else {
 		if a < 0 && -a < fr.GetFrameFillStatus().Nchars {
+			// Scrolling back: the lines above the old origin come in at
+			// the top, with their styles.
 			n = t.org - org
 			r = make([]rune, n)
 			t.file.Read(org, r)
-			fr.Insert(r, 0)
+			if st := t.styleIndices(fr, org, n); st != nil {
+				fr.InsertStyled(r, st, 0)
+			} else {
+				fr.Insert(r, 0)
+			}
 		} else {
 			fr.Delete(0, fr.GetFrameFillStatus().Nchars)
 		}

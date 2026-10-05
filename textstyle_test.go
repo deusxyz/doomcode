@@ -16,6 +16,29 @@ type recordingFrame struct {
 		p0, p1 int
 		styles []uint8
 	}
+	inserts []struct {
+		p0     int
+		text   string
+		styles []uint8 // nil for a plain Insert
+	}
+}
+
+func (f *recordingFrame) Insert(r []rune, p0 int) bool {
+	f.inserts = append(f.inserts, struct {
+		p0     int
+		text   string
+		styles []uint8
+	}{p0, string(r), nil})
+	return false
+}
+
+func (f *recordingFrame) InsertStyled(r []rune, styles []uint8, p0 int) bool {
+	f.inserts = append(f.inserts, struct {
+		p0     int
+		text   string
+		styles []uint8
+	}{p0, string(r), append([]uint8(nil), styles...)})
+	return false
 }
 
 func (f *recordingFrame) GetFrameFillStatus() frame.FrameFillStatus {
@@ -107,5 +130,36 @@ func TestTextRestyleClampsToVisible(t *testing.T) {
 		if s != 0 {
 			t.Errorf("plain restyle has style %d", s)
 		}
+	}
+}
+
+func TestScrollBackKeepsStyles(t *testing.T) {
+	// Lines "aaaa\n" "bbbb\n" "cccc\n": scroll to line 2, then back to
+	// the top. The text that reappears must be inserted with its styles.
+	text := makeKeyTestBody("aaaa\nbbbb\ncccc\n", 0, 0)
+	fr := &recordingFrame{nchars: 20}
+	text.fr = fr
+	text.nofill = true // the mock frame never fills
+	global.styles = nil
+	defer func() { global.styles = nil }()
+	text.file.Styles().Set(0, 4, "keyword")
+
+	text.org = 5 // showing from "bbbb"
+	text.setorigin(fr, 0, true, false)
+	if len(fr.inserts) != 1 {
+		t.Fatalf("inserts: %+v", fr.inserts)
+	}
+	in := fr.inserts[0]
+	k := global.styles.Index("keyword")
+	if in.p0 != 0 || in.text != "aaaa\n" || in.styles == nil {
+		t.Fatalf("scroll back inserted %+v; want styled \"aaaa\\n\" at 0", in)
+	}
+	for i, want := range []uint8{k, k, k, k, 0} {
+		if in.styles[i] != want {
+			t.Errorf("style[%d] = %d; want %d", i, in.styles[i], want)
+		}
+	}
+	if text.org != 0 {
+		t.Errorf("org = %d; want 0", text.org)
 	}
 }
