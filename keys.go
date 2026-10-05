@@ -109,8 +109,9 @@ var specialKeyNames = func() map[rune]string {
 // Forms: a single printable character ("x", "%"); "C-x" for Control plus a
 // letter or one of "[ \ ] ^ _"; "Cmd-x" for Command (macOS) plus a
 // printable character, "Cmd-X" with a capital for Command-Shift; a special
-// key name from specialKeys ("Left", "PgUp", "Enter"); "F1".."F12"; or a
-// raw code "0xF800".
+// key name from specialKeys ("Left", "PgUp", "Enter"); the same with
+// modifiers "S-", "C-", "M-", "Cmd-" in any order ("S-Left", "C-S-Right",
+// see keysmod.go); "F1".."F12"; or a raw code "0xF800".
 func ParseKey(name string) (rune, error) {
 	if name == "" {
 		return 0, fmt.Errorf("empty key name")
@@ -129,6 +130,9 @@ func ParseKey(name string) (rune, error) {
 		if n, err := strconv.Atoi(name[1:]); err == nil && 1 <= n && n <= 12 {
 			return KF | rune(n), nil
 		}
+	}
+	if r, ok := parseModKey(name); ok {
+		return r, nil
 	}
 	if strings.HasPrefix(name, "C-") {
 		rest := []rune(name[2:])
@@ -163,6 +167,9 @@ func ParseKey(name string) (rune, error) {
 // KeyName is the inverse of ParseKey.
 func KeyName(r rune) string {
 	if name, ok := specialKeyNames[r]; ok {
+		return name
+	}
+	if name, ok := modKeyName(r); ok {
 		return name
 	}
 	switch {
@@ -229,10 +236,16 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-s", "put"},
 }
 
-// DefaultKeymap returns a fresh copy of the built-in bindings.
+// DefaultKeymap returns a fresh copy of the built-in bindings, including
+// those for special keys with modifiers (keysmod.go).
 func DefaultKeymap() Keymap {
-	km := make(Keymap, len(defaultBindings))
+	km := make(Keymap, len(defaultBindings)+len(modifiedBindings))
 	for _, b := range defaultBindings {
+		if err := km.Bind(b.key, b.action); err != nil {
+			panic("default keymap: " + err.Error())
+		}
+	}
+	for _, b := range modifiedBindings {
 		if err := km.Bind(b.key, b.action); err != nil {
 			panic("default keymap: " + err.Error())
 		}
@@ -282,7 +295,7 @@ func buildActionTable() map[string]*Action {
 		}
 		table[a.Name] = a
 	}
-	for _, a := range prefixActions() {
+	for _, a := range append(prefixActions(), modifiedActions()...) {
 		if _, dup := table[a.Name]; dup {
 			panic("duplicate action " + a.Name)
 		}

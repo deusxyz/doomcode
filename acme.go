@@ -41,6 +41,12 @@ func predrawInit() *dumpfile.Content {
 
 	flag.Parse()
 
+	// A patched devdraw reports Shift/Ctrl/Alt/Cmd + special keys when
+	// this is set; an unpatched one ignores it. See keysmod.go.
+	if os.Getenv("DEVDRAW_MODKEYS") == "" {
+		os.Setenv("DEVDRAW_MODKEYS", "1")
+	}
+
 	startProfiler()
 
 	// Implicit to preserve existing semantics.
