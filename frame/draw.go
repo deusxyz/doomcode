@@ -40,7 +40,7 @@ func (f *frameimpl) drawUnderline(pt image.Point, b *frbox, x int) {
 		return
 	}
 	y := pt.Y + f.defaultfontheight
-	f.background.Draw(image.Rect(pt.X, y-1, x, y), f.styleText(b), nil, image.Pt(pt.X, y-1))
+	f.background.Draw(image.Rect(pt.X, y-1, x, y), f.styleLine(b), nil, image.Pt(pt.X, y-1))
 }
 
 // drawBox is a helpful debugging utility that wraps each box with a

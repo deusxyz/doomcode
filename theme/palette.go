@@ -70,9 +70,10 @@ type UiPalette struct {
 
 // Palette holds the complete set of colours for one visual mode.
 type Palette struct {
-	Tag  FramePalette
-	Text FramePalette
-	Ui   UiPalette
+	Tag    FramePalette
+	Text   FramePalette
+	Ui     UiPalette
+	Styles Styles // named text styles painted over Text, see styles.go
 }
 
 // tagImg returns the image for the given slot from the Tag palette.
@@ -153,6 +154,7 @@ var Light = Palette{
 		But2:      solid(0xAA0000FF),
 		But3:      solid(0x006600FF),
 	},
+	Styles: lightStyles,
 }
 
 // Dark is the built-in dark (Vampira) mode palette.
@@ -179,6 +181,7 @@ var Dark = Palette{
 		But2:      solid(0xAA0000FF),
 		But3:      solid(0x006600FF),
 	},
+	Styles: darkStyles,
 }
 
 // Solarized colour constants (Ethan Schoonover, https://ethanschoonover.com/solarized/).
@@ -225,6 +228,7 @@ var SolarizedLight = Palette{
 		But2:      solid(solRed),    // #dc322f — closest to 0xAA0000
 		But3:      solid(solGreen),  // #859900 — closest to 0x006600
 	},
+	Styles: solarizedStyles(false),
 }
 
 // SolarizedDark is the Solarized dark palette, the light/dark dual of SolarizedLight.
@@ -253,4 +257,5 @@ var SolarizedDark = Palette{
 		But2:      solid(solRed),
 		But3:      solid(solGreen),
 	},
+	Styles: solarizedStyles(true),
 }

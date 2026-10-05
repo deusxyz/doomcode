@@ -11,6 +11,7 @@ type StyleColours struct {
 	Text      draw.Image
 	Back      draw.Image
 	Underline bool
+	Line      draw.Image // underline colour; nil means the text colour
 }
 
 // SetStyleTable installs the colours for style indices; see StyleColours.
@@ -48,6 +49,14 @@ func (f *frameimpl) styleBack(b *frbox) draw.Image {
 func (f *frameimpl) styleUnderline(b *frbox) bool {
 	s := f.style(b)
 	return s != nil && s.Underline
+}
+
+// styleLine is the underline colour of b.
+func (f *frameimpl) styleLine(b *frbox) draw.Image {
+	if s := f.style(b); s != nil && s.Line != nil {
+		return s.Line
+	}
+	return f.styleText(b)
 }
 
 // Restyle gives the runes in [p0,p1) the styles in styles (one per rune;
