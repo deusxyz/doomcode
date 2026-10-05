@@ -166,15 +166,14 @@ Edwood получает клавиатуру через devdraw (plan9port, C) �
 
 Свободными остаются `Ctrl-J Ctrl-P Ctrl-Q Ctrl-R Ctrl-T` и `Ctrl-[ \ ] ^ _`. `Ctrl-Q` намеренно не используется: на macOS его перехватывает система.
 
-## 7. Фаза 2: модификаторы спецклавиш в devdraw
+## 7. Фаза 2: модификаторы спецклавиш в devdraw (готово, ждёт ручной проверки)
 
-Предложение расширения протокола (совместимое: включается явно):
+Реализовано патчем C-devdraw из plan9port, ветка `devdraw/modkeys` форка deusxyz/plan9port (коммит `efc9ace7`), бинарник `$PLAN9/bin/devdraw` пересобран (`cd src/cmd/devdraw && 9 mk install`).
 
-- Новый диапазон рун `0xF200–0xF2FF`: `0xF200 | mods<<5 | key`, где `mods` — биты 1 Shift, 2 Ctrl, 4 Alt/Option; `key` — 1 ←, 2 →, 3 ↑, 4 ↓, 5 Home, 6 End, 7 PgUp, 8 PgDn, 9 Ins, 10 Del, 11 Backspace, 12 Tab, 13 Enter, 14 Esc. Не пересекается с `KF` (0xF000–0xF0FF) и `Kcmd` (0xF100–0xF17E).
-- Код посылается только если есть хотя бы один модификатор; без модификаторов — как сейчас.
-- Включается переменной окружения `DEVDRAW_MODKEYS=1`, которую Edwood выставляет при запуске devdraw. Непропатченные клиенты (plan9port acme, 9term) ничего не замечают, потому что без переменной поведение прежнее. Это важно: иначе стоковый acme вставлял бы неизвестные руны как текст.
-- Изменения: `mac-screen.m` (`doCommandBySelector`: читать `modifierFlags` перед `keycvt`), `x11-screen.c` (`state & ShiftMask/ControlMask/Mod1Mask` в обработке XKeyEvent), `9fans.net/go/cmd/devdraw/screen.go` (`e.Modifiers` уже доступен в `key.Event`), константы в `9fans.net/go/draw/keyboard.go` и в `edwood/draw`.
-- Альтернатива без патча plan9port: Edwood поставляет свою сборку Go-devdraw (чистый Go, shiny) и запускает её вместо `$PLAN9/bin/devdraw`. Качество Go-devdraw надо проверить отдельно: в коде есть TODO по мыши и размеру окна.
+- Диапазон рун `0xF200–0xF3FF`: `Kmod | mods<<5 | key`; `Kmod = 0xF200` добавлен в `include/keyboard.h`; `mods` — биты 1 Shift, 2 Ctrl, 4 Alt/Option, 8 Cmd/Super; `key` — 1 ←, 2 →, 3 ↑, 4 ↓, 5 Home, 6 End, 7 PgUp, 8 PgDn, 9 Ins, 10 Del, 11 Backspace, 12 Tab, 13 Enter, 14 Esc. Логика в `src/cmd/devdraw/modkeys.h`, общая для `mac-screen.m` и `x11-screen.c`; Shift+Tab (NSBackTabCharacter / XK_ISO_Left_Tab) — Tab с Shift. На X11 заодно перестал портиться Ctrl+стрелка (маска `& 0x9f`).
+- Включается переменной `DEVDRAW_MODKEYS=1`; Edwood ставит её сам перед запуском devdraw (`acme.go`). Без переменной поведение прежнее, plan9port acme и 9term ничего не замечают.
+- Edwood (`keysmod.go`): имена `S-Left`, `C-S-Right`, `M-Enter`, `Cmd-Up` в `keys` и `Keys`; привязки по умолчанию: Shift+движение расширяет выделение через якорь, Ctrl+←/→ по словам, Ctrl+Shift+←/→ выделяет слово, Ctrl+Home/End начало/конец файла, Ctrl+↑/↓ прокрутка на строку, Ctrl+Enter и Cmd+Enter = Execute, Alt+Enter = Look, Ctrl+Backspace/Ctrl+Del удаляют слово, Shift+Tab = outdent, Cmd+←/→ начало/конец строки, Cmd+↑/↓ начало/конец файла.
+- Проверено: кодирование в C (тест-программа), декодирование и действия в Edwood (unit-тесты), запущенный Edwood использует пересобранный devdraw с `DEVDRAW_MODKEYS=1`. **Не проверено нажатием клавиш**: инъекция клавиш через System Events не разрешена системой. Проверить руками: Shift+→ тянет выделение, Ctrl+→ прыгает по словам, Ctrl+Enter выполняет слово под курсором, Shift+Tab сдвигает строки влево.
 
 ## 8. Конфигурация
 
@@ -246,7 +245,7 @@ Cmd-r            redo
 | prefix ← → ↑ ↓ o ; 0–9 t : c % x & z Z + s S g G Enter / | готово |
 | prefix q (номера окон), w (окно `+windows`), { } [ ] (перемещение окон), − (уменьшить), n и F3 (повтор поиска) | готово |
 | prefix Space (якорь), b (блок), Tab (сдвиг влево); Ctrl-D, Ctrl-L, Ctrl-F, Ctrl-G, Ctrl-N, Tab-сдвиг выделения | готово (`ae9bf45`) |
-| Фаза 2: модификаторы спецклавиш через Go-devdraw (`0xF200`) | после фазы 1 |
+| Фаза 2: модификаторы спецклавиш через патч C-devdraw (`0xF200`), ветка `devdraw/modkeys` plan9port | готово в коде, ждёт ручной проверки (`3fc5e17` Edwood, `efc9ace7` plan9port) |
 
 **Devdraw:** в работе используется C-devdraw из plan9port (`run.sh` ставит `DEVDRAW=$PLAN9/bin/devdraw`). Форк Go-devdraw (ветка `devdraw/keys` в github.com/deusxyz/9fans-go, коммиты `338bc60`, `3495720`: автоповтор, Cmd, фильтр модификаторов) остаётся как вклад в upstream, но не как наш рантайм, см. §15. Сборка — `build.sh`, запуск — `run.sh`.
 

@@ -13,7 +13,7 @@ justcode — доработанный Acme на базе форка Edwood (Go):
 | justcode (документы, `cmd/Syn`, скрипты) | `~/projects/justcode` | нет (локальный git) | `main` |
 | Edwood (форк) | `~/projects/justcode/edwood` (вложенный репозиторий, в `.gitignore` justcode) | `origin` = git@github.com:deusxyz/edwood.git, `upstream` = rjkroege/edwood | `main` — интеграционная, всё принятое; `keys/phase1`, `style/frame` — слиты в `main` (fast-forward); `master` не используется |
 | 9fans.net/go (форк) | `~/projects/9fans/go` | `origin` = deusxyz/9fans-go, `upstream` = 9fans/go | `main` = upstream; `devdraw/keys` — две правки Go-devdraw только для PR в upstream, **в работе не используется** |
-| plan9port (форк) | `~/projects/plan9` | `origin` = deusxyz/plan9port, `upstream` = 9fans/plan9port | `master` = upstream b6564bd9; 75 файлов «изменены» — это подстановка пути установки скриптом `lib/moveplan9.sh`, нормально |
+| plan9port (форк) | `~/projects/plan9` | `origin` = deusxyz/plan9port, `upstream` = 9fans/plan9port | `master` = upstream b6564bd9; `devdraw/modkeys` — патч модификаторов (текущая ветка, devdraw пересобран из неё); 75 файлов «изменены» — это подстановка пути установки скриптом `lib/moveplan9.sh`, нормально, в коммиты не включать |
 
 Пуш: ветки Edwood пушатся в `origin` после каждого среза (пользователь разрешил коммитить и пушить по ходу). justcode некуда пушить.
 
@@ -56,7 +56,7 @@ go test ./cmd/Syn/                             # тесты Syn (cgo, tree-sitte
 2. ~~**Файл `theme`**~~ Готово 2026-10-05 (`theme/themefile.go`, `edwood/themefile.go`, команда `Theme`). Было задумано: строки `style <имя> fg=#rrggbb bg=#rrggbb underline line=#rrggbb`, плюс переопределение палитры (`tag.back=…`, `text.text=…`) — по возможности; применяется поверх выбранной `-palette`; команда `Theme reload`. Реализация: парсер в `theme`, `StyleSet` пересоздаётся, все `Text` → `Restyle` видимого.
 3. ~~**Диагностика LSP через `style`**~~ Готово 2026-10-05: мост `cmd/Diag` читает окно `/LSP/Diagnostics` acme-lsp через `changes`; `Syn` и `Diag` чистят только свои имена стилей. acme-lsp (`~/go/bin/acme-lsp`, `L`) и gopls установлены. Было задумано: писать `error`/`warning`/`info`/`hint` в `style` с `clear q0 q1 error warning info hint`. Диагностика по умолчанию — подчёркивание + слабый фон (уже в теме).
 4. ~~**Остатки клавиатуры**~~ Готово 2026-10-05 (`winops.go`): F3/`Ctrl-B n`, `+windows`, `{ } [ ]`, `q`, `−`. Не проверено вручную (нажатия клавиш за пользователя невозможны), покрыто unit-тестами.
-5. **Фаза 2 клавиатуры**: модификаторы спецклавиш через патч C-devdraw из plan9port (форк есть): коды `0xF200 | mods<<5 | key`, включение `DEVDRAW_MODKEYS=1`; тогда Shift+стрелки, Ctrl+стрелки, Ctrl+Enter, Ctrl+Backspace. Файлы `src/cmd/devdraw/mac-screen.m` (`doCommandBySelector`), `x11-screen.c`; пересборка `cd src/cmd/devdraw && mk install`.
+5. ~~**Фаза 2 клавиатуры**~~ Готово в коде 2026-10-05 (plan9port ветка `devdraw/modkeys` efc9ace7, devdraw пересобран; Edwood `keysmod.go` 3fc5e17); **ждёт ручной проверки пользователем** — инъекция клавиш невозможна. Было задумано: коды `0xF200 | mods<<5 | key`, включение `DEVDRAW_MODKEYS=1`; тогда Shift+стрелки, Ctrl+стрелки, Ctrl+Enter, Ctrl+Backspace. Файлы `src/cmd/devdraw/mac-screen.m` (`doCommandBySelector`), `x11-screen.c`; пересборка `cd src/cmd/devdraw && mk install`.
 6. Позже: инкрементальный `Restyle` в `frame` (сейчас полный пересчёт диапазона), TypeScript и Markdown в fenced-блоках в `Syn`, upstream-PR в Edwood/9fans/go/plan9port.
 
 ## 6. Правила, о которых легко забыть
