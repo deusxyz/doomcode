@@ -82,6 +82,7 @@ var globalexectab = []Exectab{
 	{"Snarf", cut, false, true, false},
 	{"Sort", sortx, false, true /*unused*/, true /*unused*/},
 	{"Tab", tab, false, true /*unused*/, true /*unused*/},
+	{"Theme", themeCmd, false, true /*unused*/, true /*unused*/},
 	{"Tabexpand", expandtab, false, true /*unused*/, true /*unused*/},
 	{"Undo", undo, false, true, true /*unused*/},
 	{"Zerox", zeroxx, false, true /*unused*/, true /*unused*/},

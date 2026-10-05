@@ -169,7 +169,15 @@ func mainWithDisplay(g *globals, dump *dumpfile.Content, display draw.Display) {
 // if the name is not recognised).
 func paletteFromDump(dump *dumpfile.Content, name string) theme.Palette {
 	if dump != nil && dump.Palette != nil {
-		return paletteFromSpec(dump.Palette)
+		p := paletteFromSpec(dump.Palette)
+		// Dump files carry colours but no text styles: use those of the
+		// named palette so highlighting survives a Load.
+		if named, ok := theme.PaletteByName(name); ok {
+			p.Styles = named.Styles
+		} else {
+			p.Styles = theme.Light.Styles
+		}
+		return p
 	}
 	p, ok := theme.PaletteByName(name)
 	if !ok {
@@ -190,7 +198,7 @@ func main() {
 			log.Fatalf("can't open display: %v\n", err)
 		}
 
-		global.palette = paletteFromDump(dump, *paletteName)
+		global.palette = startupPalette(paletteFromDump(dump, *paletteName), dump != nil && dump.Palette != nil, *paletteName, paletteFlagSet(), themeFilePath())
 		mainWithDisplay(global, dump, display)
 	})
 }
@@ -702,4 +710,9 @@ func acmegetsnarf() {
 
 	// Trim it: it might have shortened.
 	global.snarfbuf = b[0:n]
+}
+
+// visitFlags calls f with the name of every flag set on the command line.
+func visitFlags(f func(name string)) {
+	flag.Visit(func(fl *flag.Flag) { f(fl.Name) })
 }
