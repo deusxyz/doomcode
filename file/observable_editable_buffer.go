@@ -39,6 +39,8 @@ type ObservableEditableBuffer struct {
 	treatasclean bool // Toggle to override the Dirty check on closing a buffer with unsaved changes.
 
 	filtertagobservers bool // If true, TagStatus updates are filtered.
+
+	styles StyleTable // styled spans of the text, kept in step with edits; see style.go
 }
 
 // A ObservableEditableBuffer can have a specific file-backing name that
@@ -439,8 +441,15 @@ func (e *ObservableEditableBuffer) RedoSeq() int {
 // inserted is a package-only entry point from the underlying
 // buffer (file.Buffer or file.File) to run the registered observers
 // on a change in the buffer.
+// Styles is the table of styled spans of this buffer. It follows every
+// insertion and deletion, including undo, redo and loading.
+func (e *ObservableEditableBuffer) Styles() *StyleTable {
+	return &e.styles
+}
+
 func (e *ObservableEditableBuffer) inserted(q0 OffsetTuple, b []byte, nr int) {
 	e.treatasclean = false
+	e.styles.inserted(q0.R, nr)
 	for observer := range e.observers {
 		observer.Inserted(q0, b, nr)
 	}
@@ -451,6 +460,7 @@ func (e *ObservableEditableBuffer) inserted(q0 OffsetTuple, b []byte, nr int) {
 // on a change in the buffer.
 func (e *ObservableEditableBuffer) deleted(q0, q1 OffsetTuple) {
 	e.treatasclean = false
+	e.styles.deleted(q0.R, q1.R)
 	for observer := range e.observers {
 		observer.Deleted(q0, q1)
 	}
@@ -495,6 +505,7 @@ func (e *ObservableEditableBuffer) StringSlice(rq0 int, rq1 int) string {
 func (e *ObservableEditableBuffer) ResetBuffer() {
 	e.filtertagobservers = false
 	e.seq = 0
+	e.styles.ClearAll()
 	e.f = NewTypeBuffer([]rune{}, e)
 }
 
