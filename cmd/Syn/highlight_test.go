@@ -80,14 +80,14 @@ func TestHighlightMarkdown(t *testing.T) {
 func TestStyleTextRuneOffsets(t *testing.T) {
 	// Cyrillic letters are two bytes each: offsets must come out in runes.
 	src := []byte("// привет\nx := 1\n")
-	spans := []span{{0, uint(len("// привет")), "comment"}, {uint(len("// привет\nx := ")), uint(len("// привет\nx := 1")), "number"}}
+	spans := []span{{start: 0, end: uint(len("// привет")), style: "comment"}, {start: uint(len("// привет\nx := ")), end: uint(len("// привет\nx := 1")), style: "number"}}
 	got := styleText(src, spans)
 	want := "clear\n0 9 comment\n15 16 number\n"
 	if got != want {
 		t.Errorf("styleText = %q; want %q", got, want)
 	}
 	// Spans beyond the text are clamped, empty ones dropped.
-	got = styleText([]byte("ab"), []span{{1, 10, "x"}, {2, 2, "y"}})
+	got = styleText([]byte("ab"), []span{{start: 1, end: 10, style: "x"}, {start: 2, end: 2, style: "y"}})
 	if got != "clear\n1 2 x\n" {
 		t.Errorf("clamped styleText = %q", got)
 	}
@@ -128,6 +128,48 @@ func TestStyleFor(t *testing.T) {
 		got, ok := styleFor(tc.capture, tc.all)
 		if got != tc.want || ok != tc.ok {
 			t.Errorf("styleFor(%q, %v) = %q,%v; want %q,%v", tc.capture, tc.all, got, ok, tc.want, tc.ok)
+		}
+	}
+}
+
+func TestHighlightOtherLanguages(t *testing.T) {
+	type check struct{ at, want string }
+	for _, tc := range []struct {
+		suffix string
+		src    string
+		checks []check
+	}{
+		{".c", "#include <stdio.h>\n// comment\nint main(void) { return printf(\"hi %d\", 42); }\n", []check{
+			{"#include", "keyword"}, {"<stdio.h>", "string"}, {"// comment", "comment"}, {"int ", "type"},
+			{"main", "function"}, {"return", "keyword"}, {"\"hi", "string"}, {"42", "number"}, {"printf", "function"}}},
+		{".json", "{\"key\": [1, true, null, \"v\"]}\n", []check{
+			{"\"key\"", "type"}, {"1", "number"}, {"true", "constant"}, {"null", "constant"}, {"\"v\"", "string"}}},
+		{".sh", "#!/bin/sh\n# c\nfor f in *.go; do echo \"$f\" > out; done\n", []check{
+			{"# c", "comment"}, {"for", "keyword"}, {"do", "keyword"}, {"echo", "function"}, {"\"$f\"", "string"}}},
+		{".rs", "// c\nfn main() -> u32 { let x: Vec<i32> = Vec::new(); return 7; }\n", []check{
+			{"// c", "comment"}, {"fn", "keyword"}, {"main", "function"}, {"u32", "type"}, {"let", "keyword"},
+			{"Vec<", "type"}, {"new", "function"}, {"7", "number"}}},
+		{".py", "# c\ndef f(x):\n    return str(x) + \"s\" + str(1.5)\nclass Foo: pass\n", []check{
+			{"# c", "comment"}, {"def", "keyword"}, {"f(", "function"}, {"return", "keyword"}, {"\"s\"", "string"},
+			{"1.5", "number"}, {"class", "keyword"}, {"Foo", "type"}}},
+		{".js", "// c\nfunction f(a) { return a + 1 + `t${a}`; }\nconst x = new Map();\n", []check{
+			{"// c", "comment"}, {"function", "keyword"}, {"f(", "function"}, {"return", "keyword"}, {"1 +", "number"},
+			{"`t", "string"}, {"const", "keyword"}, {"Map", "type"}}},
+	} {
+		lang := languageFor("x" + tc.suffix)
+		if lang == nil {
+			t.Errorf("%s: no language", tc.suffix)
+			continue
+		}
+		spans := highlight(lang, []byte(tc.src), false)
+		for _, c := range tc.checks {
+			i := strings.Index(tc.src, c.at)
+			if i < 0 {
+				t.Fatalf("%s: %q not in source", tc.suffix, c.at)
+			}
+			if got := spanAt(spans, uint(i)); got != c.want {
+				t.Errorf("%s %q: style %q; want %q", tc.suffix, c.at, got, c.want)
+			}
 		}
 	}
 }

@@ -1,13 +1,20 @@
 package main
 
 import (
+	"embed"
 	"path/filepath"
 	"strings"
 	"unsafe"
 
 	tree_sitter_markdown "github.com/tree-sitter-grammars/tree-sitter-markdown/bindings/go"
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
+	tree_sitter_bash "github.com/tree-sitter/tree-sitter-bash/bindings/go"
+	tree_sitter_c "github.com/tree-sitter/tree-sitter-c/bindings/go"
 	tree_sitter_go "github.com/tree-sitter/tree-sitter-go/bindings/go"
+	tree_sitter_javascript "github.com/tree-sitter/tree-sitter-javascript/bindings/go"
+	tree_sitter_json "github.com/tree-sitter/tree-sitter-json/bindings/go"
+	tree_sitter_python "github.com/tree-sitter/tree-sitter-python/bindings/go"
+	tree_sitter_rust "github.com/tree-sitter/tree-sitter-rust/bindings/go"
 )
 
 // A Language is a tree-sitter grammar with a highlight query whose capture
@@ -19,27 +26,43 @@ type Language struct {
 	inline *Language // for Markdown: grammar applied inside "inline" nodes
 }
 
+// The highlight queries, one file per grammar; see queries/README.md.
+//
+//go:embed queries/*.scm
+var queryFiles embed.FS
+
 var languages = map[string]*Language{}
 
-func mustLang(name string, ptr unsafe.Pointer, query string) *Language {
+func mustLang(name string, ptr unsafe.Pointer) *Language {
+	src, err := queryFiles.ReadFile("queries/" + name + ".scm")
+	if err != nil {
+		panic(name + ": " + err.Error())
+	}
 	lang := tree_sitter.NewLanguage(ptr)
-	q, qerr := tree_sitter.NewQuery(lang, query)
+	q, qerr := tree_sitter.NewQuery(lang, string(src))
 	if qerr != nil {
 		panic(name + ": " + qerr.Error())
 	}
 	return &Language{Name: name, lang: lang, query: q}
 }
 
+func register(l *Language, suffixes ...string) {
+	for _, suf := range suffixes {
+		languages[suf] = l
+	}
+}
+
 func init() {
-	golang := mustLang("go", tree_sitter_go.Language(), goHighlights)
-	md := mustLang("markdown", tree_sitter_markdown.Language(), markdownHighlights)
-	md.inline = mustLang("markdown-inline", tree_sitter_markdown.InlineLanguage(), markdownInlineHighlights)
-	for _, suf := range []string{".go"} {
-		languages[suf] = golang
-	}
-	for _, suf := range []string{".md", ".markdown"} {
-		languages[suf] = md
-	}
+	register(mustLang("go", tree_sitter_go.Language()), ".go")
+	register(mustLang("c", tree_sitter_c.Language()), ".c", ".h")
+	register(mustLang("json", tree_sitter_json.Language()), ".json")
+	register(mustLang("bash", tree_sitter_bash.Language()), ".sh", ".bash", ".zsh")
+	register(mustLang("rust", tree_sitter_rust.Language()), ".rs")
+	register(mustLang("python", tree_sitter_python.Language()), ".py")
+	register(mustLang("javascript", tree_sitter_javascript.Language()), ".js", ".mjs", ".cjs", ".jsx")
+	md := mustLang("markdown", tree_sitter_markdown.Language())
+	md.inline = mustLang("markdown-inline", tree_sitter_markdown.InlineLanguage())
+	register(md, ".md", ".markdown")
 }
 
 // languageFor returns the language for a window name, or nil.
@@ -51,6 +74,18 @@ func languageFor(name string) *Language {
 // false for captures that are not drawn (variables, punctuation,
 // operators unless -all) or carry no style.
 func styleFor(capture string, all bool) (string, bool) {
+	switch capture {
+	case "string.special.key": // JSON object keys: set them apart from values
+		return "type", true
+	case "text.title":
+		return "heading", true
+	case "text.emphasis", "text.strong":
+		return "emphasis", true
+	case "text.uri", "text.reference":
+		return "link", true
+	case "text.literal":
+		return "string", true
+	}
 	head := capture
 	if i := strings.IndexByte(capture, '.'); i >= 0 {
 		head = capture[:i]
@@ -64,77 +99,20 @@ func styleFor(capture string, all bool) (string, bool) {
 		return "string", true
 	case "number", "float":
 		return "number", true
-	case "type":
+	case "type", "constructor":
 		return "type", true
-	case "function", "method", "constructor":
+	case "function", "method":
 		return "function", true
-	case "constant", "boolean":
+	case "constant", "boolean", "label":
 		return "constant", true
 	case "preproc", "macro", "attribute":
 		return "preproc", true
 	case "operator":
 		return "operator", all
-	case "punctuation":
+	case "punctuation", "delimiter":
 		return "punctuation", all
 	case "variable", "property", "parameter", "field":
 		return "variable", all
-	case "text":
-		switch capture {
-		case "text.title":
-			return "heading", true
-		case "text.emphasis", "text.strong":
-			return "emphasis", true
-		case "text.uri", "text.reference":
-			return "link", true
-		case "text.literal":
-			return "string", true
-		}
 	}
 	return "", false
 }
-
-// Queries adapted from the grammars' own queries/highlights.scm files
-// (tree-sitter-go: MIT, The tree-sitter authors; tree-sitter-markdown:
-// MIT, from nvim-treesitter). Captures are the conventional names.
-
-const goHighlights = `
-(call_expression function: (identifier) @function)
-(call_expression function: (selector_expression field: (field_identifier) @function.method))
-(function_declaration name: (identifier) @function)
-(method_declaration name: (field_identifier) @function.method)
-(type_identifier) @type
-(field_identifier) @property
-(identifier) @variable
-(package_clause (package_identifier) @preproc)
-(import_declaration) @preproc
-[ "--" "-" "-=" ":=" "!" "!=" "..." "*" "*=" "/" "/=" "&" "&&" "&=" "%" "%=" "^" "^="
-  "+" "++" "+=" "<-" "<" "<<" "<<=" "<=" "=" "==" ">" ">=" ">>" ">>=" "|" "|=" "||" "~" ] @operator
-[ "break" "case" "chan" "const" "continue" "default" "defer" "else" "fallthrough" "for"
-  "func" "go" "goto" "if" "import" "interface" "map" "package" "range" "return" "select"
-  "struct" "switch" "type" "var" ] @keyword
-[ (interpreted_string_literal) (raw_string_literal) (rune_literal) ] @string
-(escape_sequence) @escape
-[ (int_literal) (float_literal) (imaginary_literal) ] @number
-[ (true) (false) (nil) (iota) ] @constant.builtin
-(comment) @comment
-`
-
-const markdownHighlights = `
-(atx_heading (inline) @text.title)
-(setext_heading (paragraph) @text.title)
-[ (atx_h1_marker) (atx_h2_marker) (atx_h3_marker) (atx_h4_marker) (atx_h5_marker) (atx_h6_marker)
-  (setext_h1_underline) (setext_h2_underline) ] @text.title
-[ (link_title) (indented_code_block) (fenced_code_block) ] @text.literal
-[ (link_destination) ] @text.uri
-[ (link_label) ] @text.reference
-[ (list_marker_plus) (list_marker_minus) (list_marker_star) (list_marker_dot) (list_marker_parenthesis)
-  (thematic_break) (block_quote_marker) ] @punctuation.special
-`
-
-const markdownInlineHighlights = `
-[ (code_span) (link_title) ] @text.literal
-(emphasis) @text.emphasis
-(strong_emphasis) @text.strong
-[ (link_destination) (uri_autolink) ] @text.uri
-[ (link_label) (link_text) (image_description) ] @text.reference
-`

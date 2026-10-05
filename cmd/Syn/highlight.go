@@ -9,16 +9,19 @@ import (
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-// A span is a styled range in byte offsets of the text.
+// A span is a styled range in byte offsets of the text. pattern is the
+// index of the query pattern that produced it: where spans start at the
+// same offset, a later pattern wins, as in tree-sitter's own highlighter.
 type span struct {
 	start, end uint
 	style      string
+	pattern    uint
 }
 
 // highlight parses text with lang and returns the styled spans, in byte
-// offsets, sorted by start. Later patterns in the query win over earlier
-// ones where they overlap, which Edwood's style table arranges by
-// replacing what a later span covers.
+// offsets, sorted by start and then by query pattern. Edwood's style
+// table lets a later span replace what it covers, so an inner span wins
+// over an enclosing one and, at the same start, a later pattern wins.
 func highlight(lang *Language, text []byte, all bool) []span {
 	parser := tree_sitter.NewParser()
 	defer parser.Close()
@@ -55,7 +58,12 @@ func highlight(lang *Language, text []byte, all bool) []span {
 			})
 		}
 	}
-	sort.SliceStable(spans, func(i, j int) bool { return spans[i].start < spans[j].start })
+	sort.SliceStable(spans, func(i, j int) bool {
+		if spans[i].start != spans[j].start {
+			return spans[i].start < spans[j].start
+		}
+		return spans[i].pattern < spans[j].pattern
+	})
 	return spans
 }
 
@@ -75,7 +83,7 @@ func captureSpans(lang *Language, node *tree_sitter.Node, text []byte, base uint
 			}
 			s, e := c.Node.StartByte(), c.Node.EndByte()
 			if s < e {
-				out = append(out, span{s + base, e + base, style})
+				out = append(out, span{s + base, e + base, style, m.PatternIndex})
 			}
 		}
 	}
