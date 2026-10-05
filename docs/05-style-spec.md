@@ -159,12 +159,19 @@ Edwood сам поддерживает отрезки при вставках и
 
 ## 9a. Состояние реализации
 
+Ветка `style/frame` в форке Edwood (от `main`), все шаги в Edwood сделаны и проверены сквозным тестом через 9P (`9p write acme/N/style`, вставка через `data`, чтение `changes`, скриншот).
+
 | Шаг | Состояние |
 |---|---|
-| 1. `frame`: `Style` в box'ах, `InsertStyled`, `Restyle`, `SetStyleTable` | готово, ветка `style/frame`, коммит `f233d20`; 6 новых тестов, старые тесты `frame` без изменений поведения |
-| 2. `file.StyleTable` в `ObservableEditableBuffer`, сдвиг на inserted/deleted (включая undo/redo/load), `ResetBuffer` чистит | готово, `a759447`; 5 тестов |
-| 3. `theme`: таблицы стилей для `acme` и `vampira` | следующий |
-| 4–7 | не начаты |
+| 1. `frame`: `Style` в box'ах, `InsertStyled`, `Restyle`, `SetStyleTable`, отдельный цвет подчёркивания | готово, `f233d20`, `f496adf` |
+| 2. `file.StyleTable` в буфере, сдвиг на inserted/deleted (undo/redo/load), `ResetBuffer` чистит | готово, `a759447` |
+| 3. `theme`: таблицы стилей для `acme`, `vampira`, `solarizedlight`, `solarizeddark`; `StyleSet` имя→индекс | готово, `f496adf` |
+| 4. `Text`: стили в `fill`/`Inserted`, `Text.Restyle`, ленивый `StyleSet` на дисплей | готово, `da6336f` |
+| 5. Файлы `style` (rw) и `changes` (ro, раздача всем читателям) в `xfid.go`/`fsys.go` | готово, `11e60ac` |
+| 6. `Syn` (tree-sitter) | следующий, в репозитории justcode |
+| 7. Файл `theme` для пользовательских цветов | не начат |
+
+Сборка ветки для пробы — `bin/edwood-style` (рабочий `bin/edwood` собран из `main` и не тронут). Проверить руками: `printf '0 10 keyword\n' | NAMESPACE=/tmp/ns.edwood 9p write acme/1/style`.
 
 Решения по §10 (2026-10-05): `changes` — да; выделение скрывает цвета стилей, подчёркивание сохраняется; один файл `style`, `clear q0 q1 имя...` с фильтром имён; диагностика — подчёркивание плюс слабый фон; `Syn` на tree-sitter через cgo как внешняя программа.
 
