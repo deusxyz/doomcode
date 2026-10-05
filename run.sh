@@ -8,7 +8,7 @@
 # Set DEVDRAW explicitly to try another one.
 cd "$(dirname "$0")"
 export PLAN9=${PLAN9:-$HOME/projects/plan9}
-export PATH=$PATH:$PLAN9/bin
+export PATH=$PWD/bin:$PATH:$PLAN9/bin # bin/ first: Syn is run from a tag
 export NAMESPACE=${NAMESPACE:-/tmp/ns.edwood}
 export DEVDRAW=${DEVDRAW:-$PLAN9/bin/devdraw}
 mkdir -p "$NAMESPACE"
