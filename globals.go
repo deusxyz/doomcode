@@ -77,6 +77,8 @@ type globals struct {
 	focusSticky bool
 	prevfocus   *Text
 	lastWarp    image.Point
+
+	lastsearch []rune // text of the last successful search, for find-next
 }
 
 // Singleton global object.

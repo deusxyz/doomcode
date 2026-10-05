@@ -113,6 +113,14 @@ var defaultPrefixBindings = []struct{ key, action string }{
 	{"Space", "anchor"},
 	{"b", "select-block"},
 	{"Tab", "outdent"},
+	{"n", "find-next"},
+	{"w", "window-list"},
+	{"{", "move-up"},
+	{"}", "move-down"},
+	{"[", "move-left"},
+	{"]", "move-right"},
+	{"q", "show-numbers"},
+	{"-", "shrink"},
 }
 
 // DefaultPrefixKeymap returns a fresh copy of the built-in prefix bindings.
@@ -172,6 +180,14 @@ func prefixActions() []*Action {
 			}
 		}},
 		{Name: "putall", Doc: "Putall: write all dirty windows that name existing files", Row: true, Fn: func(t *Text) { putall(t, nil, nil, false, false, "") }},
+		{Name: "find-next", Doc: "search again: for the selection, or for the last thing searched", Fn: (*Text).keyFindNext},
+		{Name: "window-list", Doc: "open a +windows window listing every window; Look (^O) on a name jumps there", Row: true, Fn: func(t *Text) { global.windowList(t) }},
+		{Name: "move-up", Doc: "move the window one place up in its column", Row: true, Fn: func(t *Text) { global.moveWindow(t, -1) }},
+		{Name: "move-down", Doc: "move the window one place down in its column", Row: true, Fn: func(t *Text) { global.moveWindow(t, 1) }},
+		{Name: "move-left", Doc: "move the window to the column on the left", Row: true, Fn: func(t *Text) { global.moveWindowColumn(t, -1) }},
+		{Name: "move-right", Doc: "move the window to the column on the right", Row: true, Fn: func(t *Text) { global.moveWindowColumn(t, 1) }},
+		{Name: "show-numbers", Doc: "show each window's number in its layout box for a moment (focus-N uses them)", Row: true, Fn: func(t *Text) { global.showNumbers() }},
+		{Name: "shrink", Doc: "make the window a little smaller by growing its neighbour", Row: true, Fn: func(t *Text) { global.shrinkFocus(t) }},
 		{Name: "file-start", Doc: "move to the start of the text", Fn: func(t *Text) { t.TypeCommit(); t.Show(0, 0, true) }},
 		{Name: "file-end", Doc: "move to the end of the text", Fn: func(t *Text) { t.TypeCommit(); t.Show(t.file.Nr(), t.file.Nr(), true) }},
 	}

@@ -298,6 +298,7 @@ func search(ct *Text, r []rune) bool {
 		ct.q1 = q1
 	}
 	global.seltext = ct
+	global.lastsearch = append(global.lastsearch[:0], r...)
 	return true
 
 }

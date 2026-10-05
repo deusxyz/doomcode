@@ -219,6 +219,7 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-g", "goto"},
 	{"C-n", "new"},
 	{"Cmd-n", "new"},
+	{"F3", "find-next"},
 
 	{"C-e", "execute"},
 	{"Cmd-e", "execute"},

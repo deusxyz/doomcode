@@ -322,7 +322,32 @@ func (c *Column) Resize(r image.Rectangle) {
 
 func (c *Column) Sort() {
 	sort.Slice(c.w, func(i, j int) bool { return c.w[i].body.file.Name() < c.w[j].body.file.Name() })
+	c.relayout()
+}
 
+// MoveWindow moves w one place up (dir < 0) or down (dir > 0) in the
+// column, keeping the windows' heights, and reports whether it moved.
+func (c *Column) MoveWindow(w *Window, dir int) bool {
+	i := -1
+	for j, cw := range c.w {
+		if cw == w {
+			i = j
+		}
+	}
+	j := i + dir
+	if i < 0 || j < 0 || j >= len(c.w) {
+		return false
+	}
+	c.w[i], c.w[j] = c.w[j], c.w[i]
+	if !c.fortest {
+		c.relayout()
+	}
+	return true
+}
+
+// relayout redraws the column's windows in their current order, each
+// keeping its height, the last one taking the rest.
+func (c *Column) relayout() {
 	r := c.r
 	r.Min.Y = c.tag.fr.Rect().Max.Y
 	c.display.ScreenImage().Draw(r, global.palette.TextBack(), nil, image.Point{})
