@@ -236,3 +236,55 @@ func TestFindMovesKeyboardFocusToTag(t *testing.T) {
 		t.Error("typing into the body did not record it as the focus")
 	}
 }
+
+func TestPointerLeavingFocusedTextKeepsTypingRun(t *testing.T) {
+	_, w := makeFocusScaffold()
+	defer func() { global.barttext = nil; global.focusSticky = false; global.mousetext = nil }()
+	w[3].body.all = w[3].r
+	w[3].body.fr = &rectFrame{r: w[3].r}
+	tag := &w[0].tag
+
+	// ^G typed ":" into the tag and warped the pointer; a stray motion
+	// event over another window must not end the tag's typing run.
+	global.setFocus(tag)
+	global.mousetext = tag
+	tag.eq0 = 5
+	MovedMouse(global, draw.Mouse{Point: image.Pt(150, 100)}) // over w3's body
+	if tag.eq0 != 5 {
+		t.Errorf("eq0 reset to %d while the tag kept the keyboard focus", tag.eq0)
+	}
+
+	// Without click-to-focus and without a sticky focus, Acme's rule
+	// holds: leaving the text ends the run.
+	old := *barflag
+	*barflag = false
+	defer func() { *barflag = old }()
+	global.focusSticky = false
+	global.mousetext = tag
+	MovedMouse(global, draw.Mouse{Point: image.Pt(150, 100)})
+	if tag.eq0 != ^0 {
+		t.Errorf("eq0 = %d; want it reset when the pointer decides the focus", tag.eq0)
+	}
+}
+
+func TestLookJumpMovesFocusToBody(t *testing.T) {
+	text := makeKeyTestBody("one\ntwo\nthree\n", 0, 0)
+	defer func() { global.barttext = nil; global.focusSticky = false; global.seltext = nil }()
+	tag := &text.w.tag
+	global.setFocus(tag)
+	n := tag.file.Nr()
+	tag.file.InsertAt(n, []rune(" :2"))
+	tag.SetSelect(n+1, n+3)
+	global.row.lk.Lock()
+	text.w.Lock('K')
+	look3(tag, tag.q0, tag.q1, false)
+	text.w.Unlock()
+	global.row.lk.Unlock()
+	wantSel(t, "jump to :2 selects the line", text, 4, 8)
+	if global.barttext != text {
+		t.Errorf("focus is %v; want the body after the jump", global.barttext)
+	}
+	if !global.focusSticky {
+		t.Error("focus not sticky after the jump")
+	}
+}

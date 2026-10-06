@@ -316,7 +316,12 @@ func MovedMouse(g *globals, m draw.Mouse) {
 		xfidlog(t.w, "focus")
 	}
 
-	if t != g.mousetext && g.mousetext != nil && g.mousetext.w != nil {
+	// Acme ends a typing run (what Esc selects) when the pointer leaves
+	// the text. With click-to-focus or a sticky keyboard focus the pointer
+	// does not decide where typing goes, so it does not end the run
+	// either: ^G warps the pointer and the ":" it typed must survive.
+	if t != g.mousetext && g.mousetext != nil && g.mousetext.w != nil &&
+		!((*barflag || g.focusSticky) && g.mousetext == g.barttext) {
 		g.mousetext.w.Lock('M')
 		g.mousetext.eq0 = ^0
 		g.mousetext.w.Commit(g.mousetext)

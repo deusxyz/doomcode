@@ -246,6 +246,21 @@ func (g *globals) setFocus(t *Text) {
 	g.warpTo(t)
 }
 
+// jumpFocus moves the keyboard focus to t, where a Look just landed, and
+// puts the pointer at pt as Acme does after a button-3 jump; typing then
+// continues in t rather than in the tag the address was typed into.
+func (g *globals) jumpFocus(t *Text, pt image.Point) {
+	if g.barttext != nil && g.barttext != t {
+		g.prevfocus = g.barttext
+	}
+	g.barttext = t
+	g.focusSticky = true
+	g.lastWarp = pt
+	if g.row.display != nil {
+		g.row.display.MoveTo(pt)
+	}
+}
+
 // warpTo moves the mouse pointer to the start of the first visible line of
 // t, where Acme itself puts it after a button-3 jump.
 func (g *globals) warpTo(t *Text) {
