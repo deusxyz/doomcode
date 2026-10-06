@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"testing"
 
 	"github.com/rjkroege/edwood/draw"
@@ -201,5 +202,37 @@ func TestFindAndGotoTypeIntoTag(t *testing.T) {
 	text.Type(0x07)
 	if s := tag.file.String(); s[len(s)-1] != ':' || tag.file.Nr() < n+1 {
 		t.Errorf("tag after ^G: %q", s)
+	}
+}
+
+func TestFindMovesKeyboardFocusToTag(t *testing.T) {
+	text := makeKeyTestBody("alpha beta", 0, 0)
+	defer func() { global.barttext = nil; global.focusSticky = false }()
+	tag := &text.w.tag
+	global.barttext = text
+	global.focusSticky = true
+	// As keyboardthread does: deliver the key, then record where it went,
+	// unless the action moved the focus itself.
+	if got := global.typeKey(0x06, image.Pt(0, 0)); got != text {
+		t.Fatalf("^F went to %v; want the body", got)
+	}
+	if global.barttext != tag {
+		t.Fatal("focus did not stay on the tag after ^F")
+	}
+	n := tag.file.Nr()
+	if got := global.typeKey('x', image.Pt(0, 0)); got != tag {
+		t.Fatalf("next key went to %v; want the tag", got)
+	}
+	if tag.file.Nr() != n+1 || tag.file.String()[n] != 'x' {
+		t.Errorf("tag after typing: %q", tag.file.String())
+	}
+	if global.barttext != tag {
+		t.Error("ordinary typing into the tag moved the focus away")
+	}
+	// Ordinary typing still records the focus.
+	global.barttext = text
+	global.typeKey('y', image.Pt(0, 0))
+	if global.barttext != text {
+		t.Error("typing into the body did not record it as the focus")
 	}
 }

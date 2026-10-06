@@ -427,6 +427,19 @@ func MovedMouse(g *globals, m draw.Mouse) {
 	}
 }
 
+// typeKey delivers an ordinary key to the row and records the text it
+// went to as the keyboard focus, so that -b (click to focus) keeps
+// following the typing. An action that moved the focus itself, as find
+// and goto do when they type into the tag (select.go), wins over that.
+func (g *globals) typeKey(r rune, p image.Point) *Text {
+	before := g.barttext
+	t := g.row.Type(r, p)
+	if t != nil && g.barttext == before {
+		g.barttext = t
+	}
+	return t
+}
+
 func keyboardthread(g *globals, display draw.Display) {
 	var (
 		timer *time.Timer
@@ -463,11 +476,8 @@ func keyboardthread(g *globals, display draw.Display) {
 					display.Flush()
 					goto next
 				}
-				typetext = g.row.Type(r, g.mouse.Point)
+				typetext = g.typeKey(r, g.mouse.Point)
 				t = typetext
-				if t != nil {
-					g.barttext = t
-				}
 				if t != nil && t.col != nil && !(r == draw.KeyDown || r == draw.KeyLeft || r == draw.KeyRight) { // scrolling doesn't change activecol
 					g.activecol = t.col
 				}
