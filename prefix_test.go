@@ -50,7 +50,7 @@ func TestDefaultPrefixKeymap(t *testing.T) {
 		{"o", "focus-next"}, {";", "focus-prev"}, {"0", "focus-0"}, {"9", "focus-9"},
 		{"c", "new"}, {"%", "newcol"}, {"x", "del"}, {"&", "delcol"},
 		{"z", "zoom"}, {"Z", "maximize"}, {":", "command-line"}, {"t", "tag-toggle"},
-		{"Enter", "execute"}, {"/", "look"}, {"g", "file-start"}, {"G", "file-end"},
+		{"Enter", "execute"}, {"/", "comment-toggle"}, {"l", "look"}, {"g", "file-start"}, {"G", "file-end"},
 	} {
 		r, _ := ParseKey(tc.key)
 		if a := km.Lookup(r); a == nil || a.Name != tc.action {
