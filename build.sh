@@ -12,4 +12,4 @@ if [ "$1" = "--go-devdraw" ]; then
 	NINEFANS_GO=${NINEFANS_GO:-$HOME/projects/9fans/go}
 	(cd "$NINEFANS_GO" && go build -o "$OLDPWD/bin/devdraw" ./cmd/devdraw 2>&1 | grep -v -e deprecated -e '^\s' -e 'note:' || true)
 fi
-ls -la bin/
+/bin/ls -la bin/
