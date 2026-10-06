@@ -935,6 +935,11 @@ func (t *Text) Type(r rune) {
 		a.Fn(t)
 		return
 	}
+	// An unbound special key with modifiers (keysmod.go) is not text:
+	// Shift+PgUp must not insert a private-use rune.
+	if r >= KeyMod && r <= KeyMod|0x1FF {
+		return
+	}
 
 	// Esc in anchor mode just ends it, keeping the caret; any other
 	// unbound key (typing, erasing) ends anchor mode as well.

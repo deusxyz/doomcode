@@ -220,8 +220,7 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-l", "select-line"},
 	{"C-d", "select-word"},
 	{"Cmd-d", "select-word"},
-	{"C-f", "find"},
-	{"Cmd-f", "find"},
+	{"C-f", "find"}, // no Cmd-f: devdraw's own Toggle Full Screen menu item takes it
 	{"C-g", "goto"},
 	{"Cmd-g", "goto"},
 	{"C-n", "new"},
@@ -284,6 +283,7 @@ func buildActionTable() map[string]*Action {
 		{Name: "select-block", Doc: "select the text inside the nearest enclosing brackets; again to grow outwards", Fn: (*Text).keySelectBlock},
 		{Name: "indent", Doc: "indent the selected lines by one tab stop", Mutates: true, Fn: (*Text).indentLines},
 		{Name: "outdent", Doc: "outdent the selected lines by one tab stop", Mutates: true, Fn: (*Text).outdentLines},
+		{Name: "comment-toggle", Doc: "comment out the selected lines with the file type's line comment, or uncomment them", Mutates: true, Fn: (*Text).commentToggle},
 		{Name: "find", Doc: "find the next occurrence of the selection; without one, type \"Look \" into the tag to complete, then Esc and ^E", Fn: (*Text).keyFind},
 		{Name: "goto", Doc: "type \":\" into the tag: complete the address, then Esc and ^O", Fn: (*Text).keyGoto},
 		{Name: "execute", Doc: "run the selection or the word under the cursor, like button 2", Fn: (*Text).keyExecute},

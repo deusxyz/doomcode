@@ -110,3 +110,50 @@ func TestModifiedKeysExecuteBindings(t *testing.T) {
 		}
 	}
 }
+
+func TestUnboundModifiedKeyIsNoop(t *testing.T) {
+	text := makeKeyTestBody("ab", 1, 1)
+	global.keymap.Unbind("S-PgUp")
+	defer func() { global.keymap = DefaultKeymap() }()
+	text.Type(modKey(modShift, 7))
+	text.Type(modKey(modAlt|modCmd, 9)) // M-Cmd-Ins, never bound
+	if got := text.file.String(); got != "ab" {
+		t.Fatalf("unbound modified key inserted text: %q", got)
+	}
+	wantSel(t, "unbound modified key", text, 1, 1)
+}
+
+func TestShiftPageSelects(t *testing.T) {
+	text := makeKeyTestBody("a\nb\nc\nd\n", 0, 0)
+	sPgDn, _ := ParseKey("S-PgDn")
+	sPgUp, _ := ParseKey("S-PgUp")
+	text.Type(sPgDn) // MockFrame has no lines: one line per page
+	wantSel(t, "Shift-PgDn", text, 0, 2)
+	text.Type(sPgDn)
+	wantSel(t, "Shift-PgDn again", text, 0, 4)
+	text.Type(sPgUp)
+	wantSel(t, "Shift-PgUp", text, 0, 2)
+	if got := text.file.String(); got != "a\nb\nc\nd\n" {
+		t.Fatalf("text changed: %q", got)
+	}
+}
+
+func TestOptionArrowBindings(t *testing.T) {
+	km := DefaultKeymap()
+	for _, tc := range []struct{ key, action string }{
+		{"M-Left", "word-left"}, {"M-Right", "word-right"}, {"M-S-Left", "select-word-left"},
+		{"M-S-Right", "select-word-right"}, {"M-Up", "scroll-up"}, {"M-Down", "scroll-down"},
+		{"S-PgUp", "select-page-up"}, {"S-PgDn", "select-page-down"},
+	} {
+		r, err := ParseKey(tc.key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a := km.Lookup(r); a == nil || a.Name != tc.action {
+			t.Errorf("%s bound to %v; want %s", tc.key, a, tc.action)
+		}
+	}
+	if r, _ := ParseKey("Cmd-f"); km.Lookup(r) != nil {
+		t.Error("Cmd-f is bound; devdraw owns it (Toggle Full Screen)")
+	}
+}

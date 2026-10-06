@@ -115,6 +115,16 @@ var modifiedBindings = []struct{ key, action string }{
 	{"C-End", "file-end"},
 	{"C-Up", "scroll-up"},
 	{"C-Down", "scroll-down"},
+	{"S-PgUp", "select-page-up"},
+	{"S-PgDn", "select-page-down"},
+	// macOS reserves Ctrl+arrows for Mission Control; Option+arrows is the
+	// native word movement there, and stands in for Ctrl+Up/Down as well.
+	{"M-Left", "word-left"},
+	{"M-Right", "word-right"},
+	{"M-S-Left", "select-word-left"},
+	{"M-S-Right", "select-word-right"},
+	{"M-Up", "scroll-up"},
+	{"M-Down", "scroll-down"},
 	{"C-Enter", "execute"},
 	{"Cmd-Enter", "execute"},
 	{"M-Enter", "look"},
@@ -148,12 +158,28 @@ func modifiedActions() []*Action {
 		sel("select-line-end", "extend the selection to the end of the line", (*Text).keyLineEnd),
 		sel("select-word-left", "extend the selection one word left", (*Text).keyWordLeft),
 		sel("select-word-right", "extend the selection one word right", (*Text).keyWordRight),
+		sel("select-page-up", "extend the selection a page up", func(t *Text) { t.pageMove(-1) }),
+		sel("select-page-down", "extend the selection a page down", func(t *Text) { t.pageMove(1) }),
 		{Name: "word-left", Doc: "move to the start of the previous word", Fn: (*Text).keyWordLeft},
 		{Name: "word-right", Doc: "move to the end of the next word", Fn: (*Text).keyWordRight},
 		{Name: "scroll-up", Doc: "scroll one line up without moving the cursor", Fn: func(t *Text) { t.scrollLines(-1) }},
 		{Name: "scroll-down", Doc: "scroll one line down without moving the cursor", Fn: func(t *Text) { t.scrollLines(1) }},
 		{Name: "delete-word-back", Doc: "delete the word before the cursor", Mutates: true, Fn: (*Text).keyDeleteWordBack},
 		{Name: "delete-word-forward", Doc: "delete the word after the cursor", Mutates: true, Fn: (*Text).keyDeleteWordForward},
+	}
+}
+
+// pageMove scrolls two thirds of a screen up (dir < 0) or down and takes
+// the caret along by the same number of lines, keeping the column.
+func (t *Text) pageMove(dir int) {
+	t.TypeCommit()
+	n := 2 * t.fr.GetFrameFillStatus().Maxlines / 3
+	if n < 1 {
+		n = 1
+	}
+	t.scrollLines(dir * n)
+	for i := 0; i < n; i++ {
+		t.moveVertical(dir)
 	}
 }
 
