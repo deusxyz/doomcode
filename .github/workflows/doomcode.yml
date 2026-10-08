@@ -52,6 +52,7 @@ jobs:
       # Failing test lines become annotations, readable without access to
       # the raw log.
       run: |
+        set +e  # the runner's bash has -e and pipefail; keep going to report
         go test -v -race -coverprofile coverage.txt -covermode atomic ./... 2>&1 | tee test.log
         status=${PIPESTATUS[0]}
         if [ "$status" != 0 ]; then
