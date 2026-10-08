@@ -19,6 +19,8 @@ func TestParseKey(t *testing.T) {
 		{"C-z", 0x1a},
 		{"C-[", 0x1b},
 		{"C-_", 0x1f},
+		{"C-/", 0x1f}, // what Ctrl+/ sends
+		{"Cmd-/", draw.KeyCmd + '/'},
 		{"Cmd-s", draw.KeyCmd + 's'},
 		{"Cmd-Z", draw.KeyCmd + 'Z'},
 		{"Left", draw.KeyLeft},
@@ -48,7 +50,7 @@ func TestParseKey(t *testing.T) {
 }
 
 func TestKeyNameRoundTrip(t *testing.T) {
-	for _, name := range []string{"x", "C-a", "C-z", "C-]", "Cmd-s", "Cmd-Z", "Left", "Home", "PgUp", "Enter", "Tab", "Esc", "Space", "F5", "0xF800"} {
+	for _, name := range []string{"x", "C-a", "C-z", "C-]", "C-/", "Cmd-/", "Cmd-s", "Cmd-Z", "Left", "Home", "PgUp", "Enter", "Tab", "Esc", "Space", "F5", "0xF800"} {
 		r, err := ParseKey(name)
 		if err != nil {
 			t.Fatalf("ParseKey(%q): %v", name, err)

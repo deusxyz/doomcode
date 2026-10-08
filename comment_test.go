@@ -104,3 +104,23 @@ func TestBlockCommentToggle(t *testing.T) {
 		t.Errorf("Go has a block comment entry: %q", o)
 	}
 }
+
+func TestCommentToggleKeys(t *testing.T) {
+	km := DefaultKeymap()
+	for _, key := range []string{"C-/", "Cmd-/"} {
+		r, err := ParseKey(key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a := km.Lookup(r); a == nil || a.Name != "comment-toggle" {
+			t.Errorf("%s bound to %v; want comment-toggle", key, a)
+		}
+	}
+	// Typing Ctrl+/ in a Go body comments the line.
+	text := makeKeyTestBody("x := 1\n", 0, 0)
+	text.w.body.file.SetName("/tmp/a.go")
+	text.Type(0x1f)
+	if got := text.file.String(); got != "// x := 1\n" {
+		t.Errorf("Ctrl+/ gave %q", got)
+	}
+}

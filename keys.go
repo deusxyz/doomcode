@@ -147,6 +147,10 @@ func ParseKey(name string) (rune, error) {
 			return c - 'A' + 1, nil
 		case c == '[', c == '\\', c == ']', c == '^', c == '_':
 			return c - 0x40, nil
+		case c == '/':
+			// Terminals and X11 send Ctrl+/ as 0x1F, the same code as
+			// Ctrl+_; macOS reports it the same way to devdraw.
+			return 0x1f, nil
 		}
 		return 0, fmt.Errorf("bad control key %q", name)
 	}
@@ -175,7 +179,9 @@ func KeyName(r rune) string {
 	switch {
 	case 1 <= r && r <= 26:
 		return "C-" + string(r+'a'-1)
-	case 0x1c <= r && r <= 0x1f:
+	case r == 0x1f:
+		return "C-/" // also C-_, but / is the key people press
+	case 0x1c <= r && r <= 0x1e:
 		return "C-" + string(r+0x40)
 	case draw.KeyCmd+' ' <= r && r <= draw.KeyCmd+'~':
 		return "Cmd-" + string(r-draw.KeyCmd)
@@ -216,6 +222,8 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-Z", "redo"},
 	{"C-k", "kill-line"},
 
+	{"C-/", "comment-toggle"}, // the usual editor key; also Ctrl-B /
+	{"Cmd-/", "comment-toggle"},
 	{"C-l", "select-line"},
 	{"Cmd-l", "select-line"},
 	{"C-d", "select-word"},
