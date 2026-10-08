@@ -79,6 +79,8 @@ type globals struct {
 	lastWarp    image.Point
 
 	lastsearch []rune // text of the last successful search, for find-next
+
+	fmtRules *fmtTable // formatters run by Put and Fmt, see fmtfile.go
 }
 
 // Singleton global object.
@@ -107,6 +109,7 @@ func makeglobals() *globals {
 		cexit:        make(chan struct{}),
 		cwarn:        make(chan uint),
 		keymap:       DefaultKeymap(),
+		fmtRules:     defaultFmtTable(),
 		prefixKeymap: DefaultPrefixKeymap(),
 	}
 

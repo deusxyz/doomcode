@@ -91,6 +91,13 @@ func mainWithDisplay(g *globals, dump *dumpfile.Content, display draw.Display) {
 	g.mouse = &g.mousectl.Mouse
 	g.keyboardctl = display.InitKeyboard()
 
+	// Formatters run by Put: built-in defaults plus the user's fmt file.
+	if t, n, errs := loadFmtFile(fmtFilePath()); len(errs) > 0 || n > 0 {
+		for _, err := range errs {
+			log.Printf("fmt file %s: %v", fmtFilePath(), err)
+		}
+		g.fmtRules = t
+	}
 	// Key bindings: built-in defaults plus the user's keys file.
 	if n, errs := loadKeysFile(keysFilePath()); len(errs) > 0 || n > 0 {
 		for _, err := range errs {

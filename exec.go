@@ -67,6 +67,7 @@ var globalexectab = []Exectab{
 	{"ID", id, false, true /*unused*/, true /*unused*/},
 	//	{ "Incl",		incl,		false,	true /*unused*/,		true /*unused*/		},
 	{"Indent", indent, false, true /*unused*/, true /*unused*/},
+	{"Fmt", fmtCmd, false, true /*unused*/, true /*unused*/},
 	{"Keys", keys, false, true /*unused*/, true /*unused*/},
 	{"Kill", xkill, false, true /*unused*/, true /*unused*/},
 	{"Load", dump, false, false, true /*unused*/},
@@ -605,6 +606,13 @@ func put(et *Text, _0 *Text, argt *Text, _1 bool, _2 bool, arg string) {
 		return
 	}
 	name = UnquoteFilename(name)
+	// Format first when a rule matches (fmtfile.go); a failing formatter
+	// only warns and the text is written as it is.
+	if global.fmtRules != nil && global.fmtRules.onPut {
+		if r := global.fmtRules.ruleFor(name); r != nil {
+			w.formatBody(r.argv)
+		}
+	}
 	putfile(w.body.file, 0, f.Nr(), name)
 	xfidlog(w, "put")
 }
