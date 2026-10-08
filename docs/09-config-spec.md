@@ -104,14 +104,14 @@ tabexpand     off
 1. **Файлы:** один общий `config` плюс отдельные `keys`, `theme`, `fmt`.
 2. **`palette auto`:** опрос системы раз в 5 секунд, без патча devdraw.
 3. **Имена палитр:** `doom-light` и `doom-dark`.
-4. **Шрифты:** выбрать по скриншотам. Сняты варианты (doom-light): Lucida plan9port (как сейчас); Helvetica Neue 14 для текста + Menlo 13 для кода; Menlo 13 везде; Avenir 14 + Menlo 13; и doom-dark с Lucida и с Helvetica Neue + Menlo. Сценарий: `docs/images/screenshot/shoot.sh <палитра> <размер> <файл> <шрифт> <моноширинный>`. **Ждёт выбора.**
+4. **Шрифты** (выбраны по скриншотам 2026-10-09): светлая тема — Avenir 14 для текста и Menlo 13 для кода, тёмная — Helvetica Neue 14 и Menlo 13. Шрифты стали свойством палитры (`VarFont`, `FixedFont`): палитра предлагает их на macOS, `font`/`font.fixed` в `config` и флаги `-f`/`-F` перекрывают. Сценарий сравнения: `docs/images/screenshot/shoot.sh <палитра> <размер> <файл> <шрифт> <моноширинный>`.
 5. **По умолчанию `doom-light`** и в коде, и в конфиге; светлая скопирована из `acme` со смягчением по требованиям к палитре.
 6. **Style guide тем** до реализации новых тем — `docs/10-theme-style-guide.md`; тёмная — по референсу сайта Doom Emacs.
 
 ## 8. Порядок работ (после ответов)
 
-1. Справка `docs/configuration.md` (готово) и каталог примеров `config/` с тестом «пример = умолчания».
-2. Файл `config`, порядок значений §3, шрифты; команды `Config`, `Config init/reset/reload/defaults`, клавиши `Cmd-,` и `Ctrl-B ,`.
+1. ~~Справка `docs/configuration.md` и каталог примеров `config/` с тестом «пример = умолчания»~~ (готово 2026-10-09).
+2. ~~Файл `config`, порядок значений §3, шрифты; команды `Config`, `Config init/reset/reload/defaults`, клавиши `Cmd-,` и `Ctrl-B ,`~~ (готово 2026-10-09: `editor/settings.go`, `editor/configcmd.go`, `config/`; пустой каталог при `Config` подсказывает `Config init`; шрифт, который не открылся, откатывается на Lucida).
 3. Смена палитры на ходу; `Theme <имя>`; `Theme reload` для слотов.
 4. ~~Палитры `doom-light`/`doom-dark` с тестом контраста~~ (готово 2026-10-08); темы файлами.
 5. `palette auto` с опросом системы.
