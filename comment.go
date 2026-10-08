@@ -5,9 +5,10 @@ import (
 	"strings"
 )
 
-// Line comments by file type for the comment-toggle action (prefix /).
-// Only single-line comment prefixes for now; see docs/03-keyboard-spec.md
-// section 4 in the justcode project.
+// Comments by file type for the comment-toggle action (prefix /): a line
+// comment prefix where the language has one, else a block comment pair
+// wrapped around the selected lines (Markdown, HTML, CSS). See
+// docs/03-keyboard-spec.md section 4 in the justcode project.
 
 var commentPrefixes = []struct {
 	suffixes string // space separated, with the dot
@@ -19,6 +20,31 @@ var commentPrefixes = []struct {
 	{".scm .ss .lisp .lsp .el .cl .rkt .clj .cljs .edn", ";"},
 	{".tex .sty .cls .erl .hrl", "%"},
 	{".vim", "\""},
+}
+
+// blockComments are the languages without line comments.
+var blockComments = []struct {
+	suffixes    string
+	open, close string
+}{
+	{".md .markdown .html .htm .xhtml .xml .svg .vue", "<!--", "-->"},
+	{".css", "/*", "*/"},
+}
+
+// commentBlock returns the block comment pair for a file name, or "", "".
+func commentBlock(name string) (open, close string) {
+	ext := strings.ToLower(filepath.Ext(filepath.Base(name)))
+	if ext == "" {
+		return "", ""
+	}
+	for _, c := range blockComments {
+		for _, s := range strings.Fields(c.suffixes) {
+			if s == ext {
+				return c.open, c.close
+			}
+		}
+	}
+	return "", ""
 }
 
 // commentFileNames are files recognised by name rather than suffix.
@@ -57,9 +83,14 @@ func (t *Text) commentToggle() {
 	if t.what != Body || t.w == nil {
 		return
 	}
-	prefix := commentPrefix(t.w.body.file.Name())
+	name := t.w.body.file.Name()
+	prefix := commentPrefix(name)
 	if prefix == "" {
-		warning(nil, "comment-toggle: unknown file type %q\n", t.w.body.file.Name())
+		if open, close := commentBlock(name); open != "" {
+			t.blockCommentToggle(open, close)
+			return
+		}
+		warning(nil, "comment-toggle: unknown file type %q\n", name)
 		return
 	}
 	t.markUndo()
@@ -164,6 +195,100 @@ func (t *Text) commentToggle() {
 		return
 	}
 	end := t.lineEnd(q1 + delta)
+	if end < t.file.Nr() {
+		end++
+	}
+	t.Show(q0, end, true)
+}
+
+// blockCommentToggle wraps the lines touched by the selection in one
+// block comment, "<!-- " before the first non-blank character and " -->"
+// after the last, or removes the pair if the lines already start and end
+// with it. Selection and caret follow the text as in commentToggle.
+// Block comments do not nest: wrapping text that already contains the
+// closing marker ends the comment early, as it would when typed.
+func (t *Text) blockCommentToggle(open, close string) {
+	t.markUndo()
+	t.TypeCommit()
+	t.dropAnchor()
+
+	oq0, oq1 := t.q0, t.q1
+	q0 := t.lineStart(oq0)
+	q1 := oq1
+	if q1 > q0 && t.file.ReadC(q1-1) == '\n' {
+		q1--
+	}
+	if q1 < q0 {
+		q1 = q0
+	}
+	qe := t.lineEnd(q1)
+
+	isSpace := func(r rune) bool { return r == ' ' || r == '\t' || r == '\n' }
+	a := q0
+	for a < qe && isSpace(t.file.ReadC(a)) {
+		a++
+	}
+	b := qe
+	for b > a && isSpace(t.file.ReadC(b-1)) {
+		b--
+	}
+	if a == b {
+		return // nothing but blank lines
+	}
+	po, pc := []rune(open), []rune(close)
+	at := func(q int, rs []rune) bool {
+		if q < 0 || q+len(rs) > t.file.Nr() {
+			return false
+		}
+		for i, r := range rs {
+			if t.file.ReadC(q+i) != r {
+				return false
+			}
+		}
+		return true
+	}
+
+	caret := oq0
+	var dEnd int // change in the length of the lines
+	if b-a >= len(po)+len(pc) && at(a, po) && at(b-len(pc), pc) {
+		// Uncomment: the end first, so that a stays valid.
+		ce := b - len(pc)
+		if ce > a+len(po) && t.file.ReadC(ce-1) == ' ' {
+			ce--
+		}
+		t.Delete(ce, b, true)
+		n := len(po)
+		if a+n < ce && t.file.ReadC(a+n) == ' ' {
+			n++
+		}
+		t.Delete(a, a+n, true)
+		dEnd = -(b - ce) - n
+		switch {
+		case caret >= b:
+			caret += dEnd
+		case caret > a+n:
+			caret -= n
+		case caret > a:
+			caret = a
+		}
+	} else {
+		ins := append(append([]rune{}, po...), ' ')
+		t.file.InsertAt(b, append([]rune{' '}, pc...))
+		t.file.InsertAt(a, ins)
+		dEnd = len(ins) + 1 + len(pc)
+		switch {
+		case caret >= b:
+			caret += dEnd
+		case caret >= a:
+			caret += len(ins)
+		}
+	}
+
+	if oq0 == oq1 {
+		t.Show(caret, caret, true)
+		return
+	}
+	end := qe + dEnd
 	if end < t.file.Nr() {
 		end++
 	}

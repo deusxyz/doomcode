@@ -55,3 +55,52 @@ func TestCommentToggleUnknownType(t *testing.T) {
 		t.Fatalf("unknown type changed the text: %q", got)
 	}
 }
+
+func TestBlockCommentToggle(t *testing.T) {
+	src := "# Title\n\n  some text\n  more\n\nafter\n"
+	text := makeKeyTestBody(src, 9, 25) // from "  some text" into "more"
+	text.w.body.file.SetName("/tmp/README.md")
+	text.commentToggle()
+	want := "# Title\n\n  <!-- some text\n  more -->\n\nafter\n"
+	if got := text.file.String(); got != want {
+		t.Fatalf("comment: %q; want %q", got, want)
+	}
+	wantSel(t, "whole lines after comment", text, 9, 37)
+	text.commentToggle()
+	if got := text.file.String(); got != src {
+		t.Fatalf("uncomment: %q; want %q", got, src)
+	}
+	wantSel(t, "whole lines after uncomment", text, 9, 28)
+
+	// A caret toggles its line and moves with the text.
+	text.SetSelect(14, 14) // in "some"
+	text.commentToggle()
+	if got, want := text.file.String(), "# Title\n\n  <!-- some text -->\n  more\n\nafter\n"; got != want {
+		t.Fatalf("caret comment: %q; want %q", got, want)
+	}
+	wantSel(t, "caret after comment", text, 19, 19)
+	text.commentToggle()
+	if got := text.file.String(); got != src {
+		t.Fatalf("caret uncomment: %q", got)
+	}
+	wantSel(t, "caret after uncomment", text, 14, 14)
+
+	// CSS uses /* */; blank lines alone do nothing.
+	css := makeKeyTestBody("a { color: red }\n\n", 0, 0)
+	css.w.body.file.SetName("/tmp/x.css")
+	css.commentToggle()
+	if got := css.file.String(); got != "/* a { color: red } */\n\n" {
+		t.Fatalf("css: %q", got)
+	}
+	css.SetSelect(23, 23) // the blank line
+	css.commentToggle()
+	if got := css.file.String(); got != "/* a { color: red } */\n\n" {
+		t.Fatalf("blank line changed: %q", got)
+	}
+	if o, c := commentBlock("/x/page.HTML"); o != "<!--" || c != "-->" {
+		t.Errorf("commentBlock(.HTML) = %q %q", o, c)
+	}
+	if o, _ := commentBlock("/x/main.go"); o != "" {
+		t.Errorf("Go has a block comment entry: %q", o)
+	}
+}
