@@ -33,7 +33,9 @@ type settingDef struct {
 }
 
 var settingDefs = []settingDef{
-	{"palette", theme.DefaultPaletteName, "palette", "", "colour palette: doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark"},
+	{"palette", theme.DefaultPaletteName, "palette", "", "colour palette: doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark, a theme file's name, or auto"},
+	{"palette.light", "doom-light", "", "", "palette for auto when the system is light"},
+	{"palette.dark", "doom-dark", "", "", "palette for auto when the system is dark"},
 	{"font", "", "f", "", "proportional font; empty: the palette's font on macOS, else Lucida from plan9port"},
 	{"font.fixed", "", "F", "", "fixed-width font; empty: as for font"},
 	{"window", "1024x768", "W", "", "window size and position: WidthxHeight[@X,Y]"},
@@ -95,7 +97,10 @@ func parseSettings(r io.Reader) (map[string]string, []error) {
 
 func checkSetting(name, value string) error {
 	switch name {
-	case "palette":
+	case "palette", "palette.light", "palette.dark":
+		if name == "palette" && value == "auto" {
+			return nil
+		}
 		if _, ok := theme.PaletteByName(value); !ok {
 			return fmt.Errorf("unknown palette %q", value)
 		}
@@ -226,6 +231,7 @@ func applyPaletteFonts(name string, vals map[string]string, flagSet func(string)
 // startupSettings loads the config file and applies it with the
 // palette's fonts. Called after flag.Parse and before the display opens.
 func startupSettings() {
+	startupThemes() // before the palette names are checked
 	path := configSettingsPath()
 	vals, errs := loadSettings(path)
 	for _, err := range errs {
@@ -241,7 +247,27 @@ func startupSettings() {
 		return set
 	}
 	applySettings(vals, flagSet)
+	resolveAutoPalette(vals, systemDark)
 	applyPaletteFonts(startupPaletteName(flagSet), vals, flagSet, runtime.GOOS)
+}
+
+// resolveAutoPalette turns "auto" (from -palette or the config file)
+// into the light or dark palette for the system's appearance now, and
+// turns on following it.
+func resolveAutoPalette(vals map[string]string, dark func() bool) {
+	autoPalette.light, autoPalette.dark = "doom-light", "doom-dark"
+	if v, ok := vals["palette.light"]; ok {
+		autoPalette.light = v
+	}
+	if v, ok := vals["palette.dark"]; ok {
+		autoPalette.dark = v
+	}
+	if *paletteName != "auto" {
+		return
+	}
+	autoPalette.on = true
+	*paletteName = autoPaletteName(dark())
+	configPaletteSet = true // as chosen: the theme file's palette line does not apply
 }
 
 // settingsDoc lists every setting with its default, in the file syntax.

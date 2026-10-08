@@ -32,7 +32,7 @@ var (
 	winsize           = flag.String("W", "1024x768", "Window size and position as WidthxHeight[@X,Y]")
 	ncol              = flag.Int("c", 2, "Number of columns at startup")
 	loadfile          = flag.String("l", "", "Load state from file generated with Dump command")
-	paletteName       = flag.String("palette", theme.DefaultPaletteName, "Colour palette name (doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark)")
+	paletteName       = flag.String("palette", theme.DefaultPaletteName, "Colour palette: doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark, a theme file in ~/.config/doomcode/themes, or auto to follow the system")
 )
 
 func predrawInit() *dumpfile.Content {
@@ -164,6 +164,7 @@ func mainWithDisplay(g *globals, dump *dumpfile.Content, display draw.Display) {
 	go waitthread(g, ctx)
 	go newwindowthread(g)
 	go xfidallocthread(g, ctx, display)
+	go autoPaletteLoop(ctx, g, systemDark)
 
 	signal.Ignore(ignoreSignals...)
 	signal.Notify(g.csignal, hangupSignals...)

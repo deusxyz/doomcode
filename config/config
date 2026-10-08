@@ -7,7 +7,10 @@
 #
 # name       value         what it is
 
-palette      doom-light    # doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark
+palette      doom-light    # doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark,
+                           # a theme file's name (themes/NAME next to this file), or auto
+palette.light doom-light   # with auto: the palette when the system is light
+palette.dark  doom-dark    # with auto: the palette when the system is dark; checked every 5 s
 
 # Fonts: by default the palette's own fonts on macOS (doom-light: Avenir 14
 # and Menlo 13; doom-dark: Helvetica Neue 14 and Menlo 13), Lucida from

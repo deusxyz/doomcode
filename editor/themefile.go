@@ -102,6 +102,7 @@ func paletteFlagSet() bool {
 //
 //	Theme          list the styles in effect and the theme file path
 //	Theme NAME     switch to palette NAME now (fonts too, where they follow the palette)
+//	Theme auto     follow the system's light or dark appearance
 //	Theme list     list the palettes
 //	Theme reload   re-read the theme file and repaint
 //	Theme file     print the theme file path
@@ -128,6 +129,7 @@ func themeCommandImpl(argt *Text, arg string) {
 	case "":
 		warning(nil, "Theme: styles (file %s):\n%s", path, global.palette.StylesDoc())
 	case "reload":
+		registerUserThemes(func(err error) { warning(nil, "Theme: %s: %v\n", themesDir(), err) })
 		tf, errs := readThemeFile(path)
 		for _, err := range errs {
 			warning(nil, "Theme: %s: %v\n", path, err)
@@ -142,10 +144,18 @@ func themeCommandImpl(argt *Text, arg string) {
 		warning(nil, "%s\n", path)
 	case "slots":
 		warning(nil, "Theme: palette slots: %s\n", strings.Join(theme.SlotNames(), " "))
+	case "auto":
+		if global.row.display == nil {
+			return
+		}
+		autoPalette.on = true
+		global.switchPalette(autoPaletteName(systemDark()))
+		warning(nil, "Theme: following the system: %s when light, %s when dark\n", autoPalette.light, autoPalette.dark)
 	case "list":
 		warning(nil, "Theme: palettes: %s (in use: %s)\n", strings.Join(theme.PaletteNames(), " "), *paletteName)
 	default:
 		if _, ok := theme.PaletteByName(arg); ok && global.row.display != nil {
+			autoPalette.on = false // an explicit choice stops following the system
 			global.switchPalette(arg)
 			return
 		}
