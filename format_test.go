@@ -116,3 +116,21 @@ func TestFormatterErrorNamesTheFile(t *testing.T) {
 		t.Errorf("missing reason for a formatter that did not start: %v", warnings)
 	}
 }
+
+func TestExpandFmtArgs(t *testing.T) {
+	got := expandFmtArgs([]string{"%f", "--stdin-filepath", "%f", "--x=%f.bak", "100%%", "%d", "%"}, "/p/a.ts")
+	want := []string{"%f", "--stdin-filepath", "/p/a.ts", "--x=/p/a.ts.bak", "100%", "%d", "%"}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Errorf("expandFmtArgs = %q; want %q", got, want)
+	}
+
+	// The formatter sees the path.
+	text := makeKeyTestBody("x\n", 0, 0)
+	text.w.body.file.SetName("/tmp/b.ts")
+	if !text.w.formatBody([]string{"sh", "-c", `cat; echo "$0"`, "%f"}) {
+		t.Fatal("no change")
+	}
+	if got := text.file.String(); got != "x\n/tmp/b.ts\n" {
+		t.Errorf("body %q; want the path appended", got)
+	}
+}

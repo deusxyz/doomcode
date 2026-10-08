@@ -41,7 +41,7 @@ func (w *Window) formatBody(argv []string) bool {
 	w.Commit(&w.body)
 	name := w.body.file.Name()
 	src := w.body.file.String()
-	out, stderr, err := runFormatter(argv, w.body.DirName(""), src)
+	out, stderr, err := runFormatter(expandFmtArgs(argv, name), w.body.DirName(""), src)
 	stderr = formatterMessages(stderr, name)
 	if err != nil {
 		why := "failed"
@@ -60,6 +60,38 @@ func (w *Window) formatBody(argv []string) bool {
 	}
 	w.body.replaceAll(out)
 	return true
+}
+
+// expandFmtArgs replaces %f in the arguments with the window's file name,
+// for formatters that read stdin but pick their rules by path, such as
+// prettier --stdin-filepath %f; %% stands for a literal %. The command
+// itself (argv[0]) is not expanded.
+func expandFmtArgs(argv []string, name string) []string {
+	out := []string{argv[0]}
+	for _, a := range argv[1:] {
+		if !strings.Contains(a, "%") {
+			out = append(out, a)
+			continue
+		}
+		var sb strings.Builder
+		for i := 0; i < len(a); i++ {
+			if a[i] == '%' && i+1 < len(a) {
+				switch a[i+1] {
+				case 'f':
+					sb.WriteString(name)
+					i++
+					continue
+				case '%':
+					sb.WriteByte('%')
+					i++
+					continue
+				}
+			}
+			sb.WriteByte(a[i])
+		}
+		out = append(out, sb.String())
+	}
+	return out
 }
 
 // stdinNames are what formatters call their standard input in messages:
