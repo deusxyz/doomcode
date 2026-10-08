@@ -2,6 +2,7 @@ package theme
 
 import (
 	"image"
+	"sort"
 
 	"github.com/deusxyz/doomcode/editor/draw"
 	"github.com/deusxyz/doomcode/editor/frame"
@@ -127,21 +128,48 @@ func init() {
 	}
 }
 
-// PaletteNames returns the built-in palette names, doomcode's own first.
+// builtinNames are the built-in palettes, doomcode's own first.
+var builtinNames = []string{"doom-light", "doom-dark", "acme", "vampira", "solarizedlight", "solarizeddark"}
+
+// userPalettes are palettes registered from theme files, by name.
+var userPalettes = map[string]Palette{}
+
+// PaletteNames returns the built-in palette names, doomcode's own
+// first, then the registered ones in sorted order.
 func PaletteNames() []string {
-	names := []string{"doom-light", "doom-dark"}
-	for _, n := range []string{"acme", "vampira", "solarizedlight", "solarizeddark"} {
-		if _, ok := palettes[n]; ok {
-			names = append(names, n)
+	names := append([]string(nil), builtinNames...)
+	var user []string
+	for n := range userPalettes {
+		user = append(user, n)
+	}
+	sort.Strings(user)
+	return append(names, user...)
+}
+
+// IsBuiltin reports whether name is a built-in palette.
+func IsBuiltin(name string) bool {
+	_, ok := palettes[name]
+	return ok
+}
+
+// RegisterPalettes replaces the registered (non built-in) palettes.
+// Names of built-in palettes are ignored: they cannot be shadowed.
+func RegisterPalettes(ps map[string]Palette) {
+	userPalettes = map[string]Palette{}
+	for n, p := range ps {
+		if !IsBuiltin(n) {
+			userPalettes[n] = p
 		}
 	}
-	return names
 }
 
 // PaletteByName returns the named palette and true, or the zero Palette
 // and false if the name is not registered.
 func PaletteByName(name string) (Palette, bool) {
-	p, ok := palettes[name]
+	if p, ok := palettes[name]; ok {
+		return p, true
+	}
+	p, ok := userPalettes[name]
 	return p, ok
 }
 

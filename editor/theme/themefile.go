@@ -17,6 +17,7 @@ import (
 // Lines (blank lines and # comments ignored):
 //
 //	palette vampira                  base palette, unless -palette is given
+//	font /mnt/font/Menlo-Regular/13a/font   fonts the theme suggests (font.fixed too)
 //	style keyword fg=#1f3a93         text style: fg=, bg=, line= colours,
 //	style error bg=#ffd6d6 underline   "underline"/"nounderline"
 //	style variable -                 remove a style (drawn as plain text)
@@ -34,6 +35,10 @@ type ThemeFile struct {
 	Palette string                // base palette name, "" if not given
 	Slots   map[string]ColorSpec  // palette slot overrides
 	Styles  map[string]*StyleSpec // style overrides; nil removes the style
+
+	// Fonts the theme is designed with, "" if not given; see
+	// Palette.VarFont.
+	VarFont, FixedFont string
 }
 
 // ParseColor parses #rgb, #rrggbb or #rrggbbaa into a draw.Color (RGBA).
@@ -80,6 +85,16 @@ func ParseTheme(r io.Reader) (ThemeFile, []error) {
 				continue
 			}
 			tf.Palette = f[1]
+		case "font", "font.fixed":
+			if len(f) != 2 {
+				fail("want \"%s fontname\"", f[0])
+				continue
+			}
+			if f[0] == "font" {
+				tf.VarFont = f[1]
+			} else {
+				tf.FixedFont = f[1]
+			}
 		case "style":
 			if len(f) < 3 {
 				fail("want \"style name key=value...\" or \"style name -\"")
@@ -214,6 +229,12 @@ func SlotNames() []string {
 // palette choice is the caller's business (see Palette field). Styles is
 // copied before modification so built-in palettes stay intact.
 func (tf ThemeFile) Apply(p *Palette) {
+	if tf.VarFont != "" {
+		p.VarFont = tf.VarFont
+	}
+	if tf.FixedFont != "" {
+		p.FixedFont = tf.FixedFont
+	}
 	for slot, c := range tf.Slots {
 		target := p.slot(slot)
 		if target != nil {
