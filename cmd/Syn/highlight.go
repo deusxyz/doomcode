@@ -64,7 +64,9 @@ func highlight(lang *Language, text []byte, all bool) []span {
 		}
 		return spans[i].pattern < spans[j].pattern
 	})
-	return spans
+	// Parse errors go last so that they replace the syntax colour of what
+	// they cover (errors.go).
+	return append(spans, errorSpans(root, text, 0, uint(len(text)))...)
 }
 
 // captureSpans runs lang's query over node and converts the captures to
@@ -103,7 +105,7 @@ func walk(n *tree_sitter.Node, f func(*tree_sitter.Node)) {
 // syntaxStyles are the style names Syn writes. Its clears name them, so
 // marks written by other programs (Diag's error/warning/info/hint) stay.
 var syntaxStyles = []string{"comment", "keyword", "string", "number", "type", "function", "constant",
-	"preproc", "heading", "emphasis", "link", "variable", "operator", "punctuation"}
+	"preproc", "heading", "emphasis", "link", "variable", "operator", "punctuation", errorStyle}
 
 // clearLine is "clear q0 q1" restricted to Syn's own style names.
 func clearLine(q0, q1 int) string {

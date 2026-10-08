@@ -257,7 +257,7 @@ func (d *document) allSpans(all bool) []span {
 		})
 	}
 	sortSpans(spans)
-	return spans
+	return append(spans, errorSpans(root, d.text, 0, uint(len(d.text)))...)
 }
 
 // regionSpans returns the spans that intersect [lo,hi), widening the
@@ -289,7 +289,8 @@ func (d *document) regionSpans(lo, hi uint, all bool) ([]span, uint, uint) {
 			}
 		})
 	}
-	for _, sp := range spans {
+	errs := errorSpans(root, d.text, lo, hi)
+	for _, sp := range append(errs, spans...) {
 		if sp.start < lo {
 			lo = sp.start
 		}
@@ -298,7 +299,8 @@ func (d *document) regionSpans(lo, hi uint, all bool) ([]span, uint, uint) {
 		}
 	}
 	sortSpans(spans)
-	return spans, lo, hi
+	// Parse errors last, so that they win over syntax colours (errors.go).
+	return append(spans, errs...), lo, hi
 }
 
 // inlineSpans runs the inline grammar over a Markdown inline node.
