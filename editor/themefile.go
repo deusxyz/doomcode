@@ -69,7 +69,7 @@ func reloadThemeStyles(path string) (int, []error) {
 	}
 	builtin, ok := theme.PaletteByName(name)
 	if !ok {
-		builtin = theme.Light
+		builtin = theme.DoomLight
 	}
 	global.palette.Styles = builtin.Styles
 	only := theme.ThemeFile{Styles: tf.Styles}

@@ -32,7 +32,7 @@ var (
 	winsize           = flag.String("W", "1024x768", "Window size and position as WidthxHeight[@X,Y]")
 	ncol              = flag.Int("c", 2, "Number of columns at startup")
 	loadfile          = flag.String("l", "", "Load state from file generated with Dump command")
-	paletteName       = flag.String("palette", theme.DefaultPaletteName, "Colour palette name (acme, vampira)")
+	paletteName       = flag.String("palette", theme.DefaultPaletteName, "Colour palette name (doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark)")
 )
 
 func predrawInit() *dumpfile.Content {
@@ -178,7 +178,7 @@ func mainWithDisplay(g *globals, dump *dumpfile.Content, display draw.Display) {
 }
 
 // paletteFromDump returns a Palette from the dump file if one was saved,
-// falling back to the named built-in palette (warning and defaulting to "acme"
+// falling back to the named built-in palette (warning and defaulting to "doom-light"
 // if the name is not recognised).
 func paletteFromDump(dump *dumpfile.Content, name string) theme.Palette {
 	if dump != nil && dump.Palette != nil {
@@ -188,14 +188,14 @@ func paletteFromDump(dump *dumpfile.Content, name string) theme.Palette {
 		if named, ok := theme.PaletteByName(name); ok {
 			p.Styles = named.Styles
 		} else {
-			p.Styles = theme.Light.Styles
+			p.Styles = theme.DoomLight.Styles
 		}
 		return p
 	}
 	p, ok := theme.PaletteByName(name)
 	if !ok {
 		log.Printf("unknown palette %q; using default", name)
-		return theme.Light
+		return theme.DoomLight
 	}
 	return p
 }

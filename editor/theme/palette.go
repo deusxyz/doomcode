@@ -113,6 +113,8 @@ var palettes map[string]Palette
 
 func init() {
 	palettes = map[string]Palette{
+		"doom-light":     DoomLight,
+		"doom-dark":      DoomDark,
 		"acme":           Light,
 		"vampira":        Dark,
 		"solarizedlight": SolarizedLight,
@@ -128,7 +130,7 @@ func PaletteByName(name string) (Palette, bool) {
 }
 
 // DefaultPaletteName is the name of the palette used when none is specified.
-const DefaultPaletteName = "acme"
+const DefaultPaletteName = "doom-light"
 
 // Light is the built-in light-mode palette.
 var Light = Palette{

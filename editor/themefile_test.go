@@ -92,7 +92,7 @@ func TestReloadThemeStyles(t *testing.T) {
 	// Reloading an emptier file restores the built-in styles.
 	path = writeTheme(t, "")
 	reloadThemeStyles(path)
-	if s, _ := global.palette.Styles.Resolve("keyword"); s != theme.Light.Styles["keyword"] {
+	if s, _ := global.palette.Styles.Resolve("keyword"); s != theme.DoomLight.Styles["keyword"] { // the default palette
 		t.Errorf("built-in keyword not restored: %+v", s)
 	}
 	if _, ok := global.palette.Styles.Resolve("comment"); !ok {
