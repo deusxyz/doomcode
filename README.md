@@ -92,7 +92,7 @@ cd doomcode
 
 # Getting help
 
-The documentation lives in [docs/](docs/), in Russian for now. The [keyboard specification](docs/03-keyboard-spec.md) lists every binding; inside the editor, run `Keys` for the bindings in effect and `Keys actions` for everything a key can do.
+The documentation lives in [docs/](docs/), in Russian for now. Where the settings live, what goes in them and what is built in: [docs/configuration.md](docs/configuration.md). The [keyboard specification](docs/03-keyboard-spec.md) lists every binding; inside the editor, run `Keys` for the bindings in effect and `Keys actions` for everything a key can do.
 
 A few keys to start with:
 
