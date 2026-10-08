@@ -24,4 +24,4 @@
 
 ## Лицензия
 
-Код редактора в `editor/` распространяется на условиях [editor/LICENSE](editor/LICENSE), унаследованных от Edwood и plan9port.
+[MIT](LICENSE), © 2026 Igor Kozlitin. Код редактора в `editor/`, унаследованный от Edwood, plan9port и Project Serenity, остаётся под условиями [editor/LICENSE](editor/LICENSE) (BSD-3-Clause и MIT); их уведомления сохраняются. Сторонние Go-модули — под своими лицензиями (MIT, BSD-2-Clause, BSD-3-Clause).
