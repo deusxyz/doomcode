@@ -117,13 +117,13 @@ func TestKeysFilePath(t *testing.T) {
 
 func TestActionsDoc(t *testing.T) {
 	doc := actionsDoc()
-	for _, name := range []string{"execute", "look", "put", "cursor-up"} {
+	for _, name := range []string{"execute", "look", "put", "cursor-up", "run <command>", "tag <text>"} {
 		if !strings.Contains(doc, name) {
 			t.Errorf("actionsDoc lacks %q", name)
 		}
 	}
 	lines := strings.Split(strings.TrimSpace(doc), "\n")
-	if len(lines) != len(actionTable) {
-		t.Errorf("actionsDoc has %d lines; want %d", len(lines), len(actionTable))
+	if want := len(actionTable) + 2; len(lines) != want { // plus run and tag
+		t.Errorf("actionsDoc has %d lines; want %d", len(lines), want)
 	}
 }

@@ -122,6 +122,14 @@ var defaultPrefixBindings = []struct{ key, action string }{
 	{"]", "move-right"},
 	{"q", "show-numbers"},
 	{"-", "shrink"},
+
+	// acme-lsp's L (keyrun.go).
+	{"d", "run L def"},
+	{"r", "run L refs"},
+	{"R", "tag L rn"},
+	{"h", "run L hov"},
+	{"i", "run L impls"},
+	{"k", "run L sig"},
 }
 
 // DefaultPrefixKeymap returns a fresh copy of the built-in prefix bindings.

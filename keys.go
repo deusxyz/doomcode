@@ -45,6 +45,9 @@ func (km Keymap) Bind(key, action string) error {
 	}
 	a, ok := actionTable[action]
 	if !ok {
+		a = commandAction(action) // "run <command>", "tag <text>": keyrun.go
+	}
+	if a == nil {
 		return fmt.Errorf("unknown action %q", action)
 	}
 	km[r] = a
@@ -234,6 +237,13 @@ var defaultBindings = []struct{ key, action string }{
 	{"C-n", "new"},
 	{"Cmd-n", "new"},
 	{"F3", "find-next"},
+
+	// Language server commands from acme-lsp's L (keyrun.go), with the
+	// keys VS Code uses where devdraw can deliver them; more under the
+	// prefix (prefix.go). Without acme-lsp they report "L: not found".
+	{"F12", "run L def"},
+	{"F2", "tag L rn"},
+	{"M-Esc", "run L comp -e"},
 
 	{"C-e", "execute"},
 	{"Cmd-e", "execute"},

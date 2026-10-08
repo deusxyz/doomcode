@@ -18,7 +18,9 @@ import (
 //
 // Format: one binding per line, "key action", where key is spelled as
 // ParseKey accepts ("C-s", "Cmd-s", "Left", "F3", "0xF800") and action is a
-// name from actionTable. "prefix key action" binds the key after the
+// name from actionTable, or "run" followed by a command, which the key
+// then runs like button 2, or "tag" followed by text, which it types into
+// the tag (keyrun.go). "prefix key action" binds the key after the
 // Ctrl-B prefix instead. "key -" removes a binding so the key is typed as
 // text again. Blank lines are ignored and # starts a comment that runs to
 // the end of the line. The file
@@ -59,11 +61,16 @@ func loadKeysText(km, pkm Keymap, r io.Reader) (n int, errs []error) {
 		}
 		fields := strings.Fields(line)
 		target := km
-		if len(fields) == 3 && fields[0] == "prefix" {
+		if len(fields) >= 3 && fields[0] == "prefix" {
 			target, fields = pkm, fields[1:]
 		}
+		// "key run command words..." and "key tag text..." bind the key
+		// to a command (keyrun.go).
+		if len(fields) >= 3 && (fields[1] == "run" || fields[1] == "tag") {
+			fields = []string{fields[0], strings.Join(fields[1:], " ")}
+		}
 		if len(fields) != 2 {
-			errs = append(errs, fmt.Errorf("line %d: want \"key action\" or \"prefix key action\", got %q", lineno, line))
+			errs = append(errs, fmt.Errorf("line %d: want \"key action\", \"key run command\", \"key tag text\" or \"prefix key action\", got %q", lineno, line))
 			continue
 		}
 		key, action := fields[0], fields[1]
@@ -128,6 +135,8 @@ func actionsDoc() string {
 	for _, name := range names {
 		fmt.Fprintf(&sb, "%-14s %s\n", name, actionTable[name].Doc)
 	}
+	fmt.Fprintf(&sb, "%-14s %s\n", "run <command>", "run the command in the window, like button 2 on that text")
+	fmt.Fprintf(&sb, "%-14s %s\n", "tag <text>", "type the text into the tag to complete, then Esc and ^E")
 	return sb.String()
 }
 
