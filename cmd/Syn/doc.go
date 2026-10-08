@@ -255,6 +255,8 @@ func (d *document) allSpans(all bool) []span {
 				spans = append(spans, d.inlineSpans(n, all)...)
 			}
 		})
+		fs, _, _, _ := fenceSpans(root, d.text, 0, uint(len(d.text)), all)
+		spans = append(spans, fs...)
 	}
 	sortSpans(spans)
 	return append(spans, errorSpans(root, d.text, 0, uint(len(d.text)))...)
@@ -264,11 +266,24 @@ func (d *document) allSpans(all bool) []span {
 // region so that every returned span lies entirely inside it.
 func (d *document) regionSpans(lo, hi uint, all bool) ([]span, uint, uint) {
 	root := d.tree.RootNode()
+	var spans []span
+	// A fenced block is rewritten whole (fence.go): widen the region to
+	// the blocks it touches before querying it.
+	if d.inline != nil {
+		if fs, blo, bhi, ok := fenceSpans(root, d.text, lo, hi, all); ok {
+			spans = append(spans, fs...)
+			if blo < lo {
+				lo = blo
+			}
+			if bhi > hi {
+				hi = bhi
+			}
+		}
+	}
 	names := d.lang.query.CaptureNames()
 	qc := tree_sitter.NewQueryCursor()
 	defer qc.Close()
 	qc.SetByteRange(lo, hi)
-	var spans []span
 	matches := qc.Matches(d.lang.query, root, d.text)
 	for m := matches.Next(); m != nil; m = matches.Next() {
 		for _, c := range m.Captures {

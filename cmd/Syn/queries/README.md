@@ -3,7 +3,8 @@
 `*.scm` are tree-sitter highlight queries, one per grammar. They are the
 grammars' own `queries/highlights.scm` files (MIT licensed by their
 respective authors: the tree-sitter authors for go, c, json, bash, rust,
-python, javascript; nvim-treesitter for markdown), with small changes:
+python, javascript, typescript; nvim-treesitter for markdown), with small
+changes:
 
 - `go.scm`: `package` identifier and `import` declarations captured as
   `@preproc`.
@@ -15,5 +16,12 @@ python, javascript; nvim-treesitter for markdown), with small changes:
 - `rust.scm`: integer and float literals captured as `@number` instead of
   `@constant.builtin`.
 - `python.scm`: class names captured as `@type`.
+- `typescript.scm`: the grammar's file unchanged. As upstream intends, it
+  is loaded after `javascript.scm` for both TypeScript and TSX
+  (`mustLang` concatenates them), so its patterns extend and override the
+  JavaScript ones.
+- `markdown.scm`: fenced code blocks no longer captured whole; only the
+  fences and the info string are, and the content is highlighted with
+  the language the info string names (fence.go).
 
 Capture names are mapped to Edwood style names by `styleFor` in lang.go.

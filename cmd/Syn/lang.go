@@ -15,6 +15,7 @@ import (
 	tree_sitter_json "github.com/tree-sitter/tree-sitter-json/bindings/go"
 	tree_sitter_python "github.com/tree-sitter/tree-sitter-python/bindings/go"
 	tree_sitter_rust "github.com/tree-sitter/tree-sitter-rust/bindings/go"
+	tree_sitter_typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
 )
 
 // A Language is a tree-sitter grammar with a highlight query whose capture
@@ -33,10 +34,21 @@ var queryFiles embed.FS
 
 var languages = map[string]*Language{}
 
-func mustLang(name string, ptr unsafe.Pointer) *Language {
-	src, err := queryFiles.ReadFile("queries/" + name + ".scm")
-	if err != nil {
-		panic(name + ": " + err.Error())
+// mustLang loads a grammar with the query queries/<name>.scm, or with the
+// concatenation of the named query files when files are given: a later
+// file's patterns win over an earlier one's, which is how the TypeScript
+// query extends the JavaScript one.
+func mustLang(name string, ptr unsafe.Pointer, files ...string) *Language {
+	if len(files) == 0 {
+		files = []string{name}
+	}
+	var src []byte
+	for _, f := range files {
+		b, err := queryFiles.ReadFile("queries/" + f + ".scm")
+		if err != nil {
+			panic(name + ": " + err.Error())
+		}
+		src = append(append(src, b...), '\n')
 	}
 	lang := tree_sitter.NewLanguage(ptr)
 	q, qerr := tree_sitter.NewQuery(lang, string(src))
@@ -60,6 +72,8 @@ func init() {
 	register(mustLang("rust", tree_sitter_rust.Language()), ".rs")
 	register(mustLang("python", tree_sitter_python.Language()), ".py")
 	register(mustLang("javascript", tree_sitter_javascript.Language()), ".js", ".mjs", ".cjs", ".jsx")
+	register(mustLang("typescript", tree_sitter_typescript.LanguageTypescript(), "javascript", "typescript"), ".ts", ".mts", ".cts")
+	register(mustLang("tsx", tree_sitter_typescript.LanguageTSX(), "javascript", "typescript"), ".tsx")
 	md := mustLang("markdown", tree_sitter_markdown.Language())
 	md.inline = mustLang("markdown-inline", tree_sitter_markdown.InlineLanguage())
 	register(md, ".md", ".markdown")

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -19,54 +18,17 @@ type span struct {
 }
 
 // highlight parses text with lang and returns the styled spans, in byte
-// offsets, sorted by start and then by query pattern. Edwood's style
-// table lets a later span replace what it covers, so an inner span wins
-// over an enclosing one and, at the same start, a later pattern wins.
+// offsets, sorted by start and then by query pattern, followed by the
+// parse error marks. Edwood's style table lets a later span replace what
+// it covers, so an inner span wins over an enclosing one, at the same
+// start a later pattern wins, and errors win over syntax colours.
 func highlight(lang *Language, text []byte, all bool) []span {
-	parser := tree_sitter.NewParser()
-	defer parser.Close()
-	if err := parser.SetLanguage(lang.lang); err != nil {
+	d, err := newDocument(lang, text)
+	if err != nil {
 		return nil
 	}
-	tree := parser.Parse(text, nil)
-	if tree == nil {
-		return nil
-	}
-	defer tree.Close()
-	root := tree.RootNode()
-
-	spans := captureSpans(lang, root, text, 0, all)
-
-	if lang.inline != nil {
-		// Markdown: the block grammar leaves "inline" nodes for the
-		// inline grammar. Parse each separately and offset the result.
-		inlineParser := tree_sitter.NewParser()
-		defer inlineParser.Close()
-		if err := inlineParser.SetLanguage(lang.inline.lang); err == nil {
-			walk(root, func(n *tree_sitter.Node) {
-				if n.Kind() != "inline" {
-					return
-				}
-				s, e := n.StartByte(), n.EndByte()
-				sub := text[s:e]
-				t := inlineParser.Parse(sub, nil)
-				if t == nil {
-					return
-				}
-				spans = append(spans, captureSpans(lang.inline, t.RootNode(), sub, s, all)...)
-				t.Close()
-			})
-		}
-	}
-	sort.SliceStable(spans, func(i, j int) bool {
-		if spans[i].start != spans[j].start {
-			return spans[i].start < spans[j].start
-		}
-		return spans[i].pattern < spans[j].pattern
-	})
-	// Parse errors go last so that they replace the syntax colour of what
-	// they cover (errors.go).
-	return append(spans, errorSpans(root, text, 0, uint(len(text)))...)
+	defer d.close()
+	return d.allSpans(all)
 }
 
 // captureSpans runs lang's query over node and converts the captures to

@@ -66,7 +66,8 @@ func TestHighlightMarkdown(t *testing.T) {
 		{"code", "string"},
 		{"link]", "link"},
 		{"http://x.y", "link"},
-		{"func f", "string"}, // fenced code block
+		{"func f", "keyword"}, // fenced Go code, highlighted as Go (fence.go)
+		{"```go", "string"},   // the fence itself
 	} {
 		if got := spanAt(spans, idx(tc.at)); got != tc.want {
 			t.Errorf("%q: style %q; want %q", tc.at, got, tc.want)
