@@ -1,0 +1,123 @@
+{
+	"Version": 1,
+	"CurrentDir": "/home/gopher/go/src/edwood",
+	"VarFont": "/lib/font/bit/lucsans/euro.8.font",
+	"FixedFont": "/lib/font/bit/lucm/unicode.9.font",
+	"RowTag": {
+		"Buffer": "Newcol Kill Putall Dump Exit win",
+		"Q0": 23,
+		"Q1": 27
+	},
+	"Columns": [
+		{
+			"Position": 0,
+			"Tag": {
+				"Buffer": "New Cut Paste Snarf Sort Zerox Delcol ",
+				"Q0": 14,
+				"Q1": 19
+			}
+		},
+		{
+			"Position": 54.296875,
+			"Tag": {
+				"Buffer": "New Cut Paste Snarf Sort Zerox Delcol ",
+				"Q0": 14,
+				"Q1": 19
+			}
+		}
+	],
+	"Windows": [
+		{
+			"Type": 1,
+			"Column": 0,
+			"Position": 2.263648468708389,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": "glass Del Snarf | Look Edit ",
+				"Q0": 5,
+				"Q1": 5
+			},
+			"Body": {
+				"Buffer": "I can eat glass and it doesn't hurt me.\nJe peux manger du verre, ça ne me fait pas mal.\n私はガラスを食べられます。それは私を傷つけません。\nআমি কাঁচ খেতে পারি, তাতে আমার কোনো ক্ষতি হয় না।\n",
+				"Q0": 6,
+				"Q1": 15
+			}
+		},
+		{
+			"Type": 0,
+			"Column": 0,
+			"Position": 12.649800266311585,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": "/home/gopher/go/src/edwood/testdata/hello.go Del Snarf | Look Edit ",
+				"Q0": 60,
+				"Q1": 65
+			},
+			"Body": {
+				"Q0": 8,
+				"Q1": 12
+			}
+		},
+		{
+			"Type": 0,
+			"Column": 0,
+			"Position": 31.025299600532623,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": "/home/gopher/go/src/edwood/testdata/こんにちは.txt Del Snarf | Look Edit ",
+				"Q0": 67,
+				"Q1": 72
+			},
+			"Body": {
+				"Q0": 82,
+				"Q1": 93
+			}
+		},
+		{
+			"Type": 0,
+			"Column": 1,
+			"Position": 2.263648468708389,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": "/home/gopher/go/src/edwood/testdata/ Del Snarf Get | Look Edit ",
+				"Q0": 49,
+				"Q1": 54
+			},
+			"Body": {
+				"Q0": 29,
+				"Q1": 41
+			}
+		},
+		{
+			"Type": 2,
+			"Column": 1,
+			"Position": 18.8135593220339,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": "/home/gopher/go/src/edwood/testdata/hello.go Del Snarf | Look Edit ",
+				"Q0": 60,
+				"Q1": 65
+			},
+			"Body": {
+				"Q0": 8,
+				"Q1": 12
+			}
+		},
+		{
+			"Type": 1,
+			"Column": 1,
+			"Position": 35.932203389830505,
+			"Font": "/lib/font/bit/lucsans/euro.8.font",
+			"Tag": {
+				"Buffer": " Del Snarf | Look Edit ",
+				"Q0": 5,
+				"Q1": 10
+			},
+			"Body": {
+				"Buffer": "This window has no name.\n",
+				"Q0": 12,
+				"Q1": 23
+			}
+		}
+	]
+}

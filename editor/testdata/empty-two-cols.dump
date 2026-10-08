@@ -1,0 +1,30 @@
+{
+	"Version": 1,
+	"CurrentDir": "/home/gopher/go/src/edwood",
+	"VarFont": "/lib/font/bit/lucsans/euro.8.font",
+	"FixedFont": "/lib/font/bit/lucm/unicode.9.font",
+	"RowTag": {
+		"Buffer": "Newcol Kill Putall Dump Exit ",
+		"Q0": 29,
+		"Q1": 29
+	},
+	"Columns": [
+		{
+			"Position": 0,
+			"Tag": {
+				"Buffer": "New Cut Paste Snarf Sort Zerox Delcol ",
+				"Q0": 38,
+				"Q1": 38
+			}
+		},
+		{
+			"Position": 59.9609375,
+			"Tag": {
+				"Buffer": "New Cut Paste Snarf Sort Zerox Delcol ",
+				"Q0": 38,
+				"Q1": 38
+			}
+		}
+	],
+	"Windows": null
+}

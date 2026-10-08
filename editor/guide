@@ -1,0 +1,25 @@
+Edit X:edwood/\+Errors: 1,$d
+X:edwood/.*\.go: w
+
+go build -o . ./cmd/*
+{go build -tags debug}
+./testedwood.sh
+./testacme.sh
+
+{go test -covermode=count -coverprofile=count.out}
+go tool cover -html=count.out
+
+gofmt -d -s .
+go vet .
+staticcheck -checks inherit,-U1000,-SA4003 ./...
+
+go test --run 'TestXfidreadQWctl' -covermode=count -coverprofile=count.out
+
+# References
+Assorted useful internal notes.
+
+- historical work log [[EdwoodDoingLog]]
+- [[EdwoodFilePkgTesting]] discussion of testing the file package.
+- [[MultiUndoTesting]] ideas for how to test undo spanning multiple windows. (This code is buggy)
+
+go install github.com/client9/misspell/cmd/misspell@v0.3.4
