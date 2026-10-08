@@ -104,4 +104,4 @@ for _, b := range f.box {
 3. **Подсветка — внешним процессом через файл `style`** в acme(4). **LSP** нужен: сначала через `acme-lsp` поверх совместимого API, затем inline-диагностика через тот же `style`.
 4. **Платформа:** сейчас macOS, Linux позже обязателен. База Edwood это покрывает: на обеих платформах через plan9port devdraw, на Linux есть и чисто Go-вариант (duitdraw).
 
-**База подтверждена:** Edwood v0.4.0-64-gf6f9012 собран на этой машине (`edwood/bin/edwood`), все 11 тестовых пакетов прошли, 9P-сервис работает (`9p ls acme`, запись в `acme/new/body`). Edwood и plan9port acme используют одно имя сервиса `acme`; для параллельного запуска Edwood стартует с `NAMESPACE=/tmp/ns.edwood`.
+**База подтверждена:** Edwood v0.4.0-64-gf6f9012 собран на этой машине (`editor/bin/edwood`), все 11 тестовых пакетов прошли, 9P-сервис работает (`9p ls acme`, запись в `acme/new/body`). Edwood и plan9port acme используют одно имя сервиса `acme`; для параллельного запуска Edwood стартует с `NAMESPACE=/tmp/ns.doomcode`.

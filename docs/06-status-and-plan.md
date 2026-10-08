@@ -1,42 +1,45 @@
 # Состояние проекта и план (точка передачи)
 
-Обновлено 2026-10-06 (§5a исправлен и проверен; идёт список «позже» из §5 п. 6). Этот файл — то, что нужно прочитать, чтобы продолжить работу без истории разговора. Детали — в соседних документах: `01` обзор Acme, `02` рамки и инварианты, `03` клавиатура, `04` процесс и правила кода, `05` подсветка, `90` журнал отличий от Acme.
+Обновлено 2026-10-08 (проект стал doomcode: один репозиторий, свой путь без оглядки на апстрим; активный план пуст, отложенное в §5b, идеи в `08`). Этот файл — то, что нужно прочитать, чтобы продолжить работу без истории разговора. Детали — в соседних документах: `00` миссия, `01` обзор Acme, `02` рамки и инварианты, `03` клавиатура, `04` процесс и правила кода, `05` подсветка, `07` форматирование, `08` идеи, `90` журнал отличий от Acme, `test-plan.md` — что пользователю осталось проверить.
 
 ## 1. Что это
 
-justcode — доработанный Acme на базе форка Edwood (Go): CUA-клавиатура с префиксом `Ctrl-B` в стиле tmux, подсветка синтаксиса и разметка через файловый интерфейс acme(4), внешний подсветчик `Syn` на tree-sitter. Совместимость с расширениями VS Code вынесена за рамки. Пользователь — Игорь (deusxyz на GitHub), macOS, общение на русском, код и коммиты на английском.
+doomcode — минималистичный, удобный и быстрый редактор для разработчиков с гибкой настройкой и расширением (миссия и происхождение имени — `docs/00-mission.md`). Вырос из форка Edwood (Go-версия Acme): CUA-клавиатура с префиксом `Ctrl-B` в стиле tmux, подсветка и разметка через файловый интерфейс acme(4), внешний подсветчик `Syn` на tree-sitter, мост диагностики `Diag`, форматирование при Put, клавиши для команд acme-lsp. Совместимость с расширениями VS Code вынесена за рамки. Пользователь — Игорь (deusxyz на GitHub), macOS, общение на русском, код и коммиты на английском.
+
+**2026-10-08 — свой проект.** Решение пользователя: не ориентироваться на апстрим Edwood. Редактор перенесён с историей в `editor/` общего репозитория, модуль `github.com/deusxyz/doomcode`, программа `bin/doomcode`, конфиги `~/.config/doomcode`, переменные `DOOMCODE_*`, дамп `~/doomcode.dump`. Имя сервиса 9P осталось `acme`: клиенты acme(4) работают без изменений. «Лазейка» к апстриму — ветка `upstream-compat` форка `deusxyz/edwood`.
 
 ## 2. Репозитории и ветки
 
 | Что | Где | Remotes | Ветки |
 |---|---|---|---|
-| justcode (документы, `cmd/Syn`, скрипты) | `~/projects/justcode` | нет (локальный git) | `main` |
-| Edwood (форк) | `~/projects/justcode/edwood` (вложенный репозиторий, в `.gitignore` justcode) | `origin` = git@github.com:deusxyz/edwood.git, `upstream` = rjkroege/edwood | `main` — интеграционная, всё принятое; `keys/phase1`, `style/frame` — слиты в `main` (fast-forward); `master` не используется |
-| 9fans.net/go (форк) | `~/projects/9fans/go` | `origin` = deusxyz/9fans-go, `upstream` = 9fans/go | `main` = upstream; `devdraw/keys` — две правки Go-devdraw только для PR в upstream, **в работе не используется** |
-| plan9port (форк) | `~/projects/plan9` | `origin` = deusxyz/plan9port, `upstream` = 9fans/plan9port | `master` = upstream b6564bd9; `devdraw/modkeys` — патч модификаторов (текущая ветка, devdraw пересобран из неё); 75 файлов «изменены» — это подстановка пути установки скриптом `lib/moveplan9.sh`, нормально, в коммиты не включать |
+| doomcode (редактор, Syn, Diag, документы) | пока `~/projects/justcode` (каталог ещё не переименован) | `origin` — будет `deusxyz/doomcode`, пользователь создаёт репозиторий | `main` |
+| Edwood (форк, лазейка) | `~/projects/edwood` | `origin` = deusxyz/edwood, `upstream` = rjkroege/edwood | `upstream-compat` = наш `main` до разделения (`2a193e4`); `master` = зеркало апстрима; `main` форка больше не развивается |
+| plan9port (форк) | `~/projects/plan9` | `origin` = deusxyz/plan9port, `upstream` = 9fans/plan9port | `master` = upstream b6564bd9; `devdraw/modkeys` — патч модификаторов (текущая ветка, devdraw пересобран из неё); 75 файлов «изменены» — подстановка пути установки скриптом `lib/moveplan9.sh`, в коммиты не включать |
+| 9fans.net/go (форк) | `~/projects/9fans/go` | `origin` = deusxyz/9fans-go, `upstream` = 9fans/go | `main` = upstream; `devdraw/keys` — правки Go-devdraw, **в работе не используется** |
 
-Пуш: ветки Edwood пушатся в `origin` после каждого среза (пользователь разрешил коммитить и пушить по ходу). justcode некуда пушить.
+Пуш: пользователь разрешил коммитить и пушить по ходу работы.
 
 ## 3. Сборка, запуск, тесты
 
 ```bash
-cd ~/projects/justcode && ./build.sh          # bin/edwood и bin/Syn
-./run.sh <файлы>                               # Edwood с правильным окружением
-cd edwood && ./presub.sh                       # gofmt -s, vet, staticcheck, misspell, go test -race
-go test ./cmd/Syn/                             # тесты Syn (cgo, tree-sitter)
+./build.sh                                     # bin/doomcode, bin/Syn, bin/Diag
+./run.sh <файлы>                               # редактор с правильным окружением
+cd editor && ./presub.sh                       # gofmt -s, vet, staticcheck, misspell редактора
+go test ./...                                  # все тесты модуля (Syn и Diag — cgo, tree-sitter)
 ```
 
-- `run.sh` ставит `PLAN9=~/projects/plan9`, `PATH` с `bin/` и `$PLAN9/bin`, `NAMESPACE=/tmp/ns.edwood` (чтобы жить рядом с plan9port acme, у них одно имя сервиса) и `DEVDRAW=$PLAN9/bin/devdraw` (**C-devdraw из plan9port**; Go-devdraw отвергнут: медленный, без курсоров и колеса, Backspace/Delete неверны).
-- Тестам Edwood нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе `TestRunproc`/`TestMntDecRef` падают — это окружение, не flaky.
-- Клиентам (`9p`, `Syn`, `win`, `acme-lsp`) нужен тот же `NAMESPACE`. Из тега Edwood всё наследуется само.
+- `run.sh` ставит `PLAN9=~/projects/plan9`, `PATH` с `bin/`, `~/go/bin` (acme-lsp и `L`) и `$PLAN9/bin`, `NAMESPACE=/tmp/ns.doomcode` (чтобы жить рядом с plan9port acme, у них одно имя сервиса) и `DEVDRAW=$PLAN9/bin/devdraw` (**C-devdraw из plan9port**; Go-devdraw отвергнут: медленный, без курсоров и колеса, Backspace/Delete неверны).
+- Тестам редактора нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе `TestRunproc`/`TestMntDecRef` падают — это окружение, не flaky. В PATH пользователя `$PLAN9/bin` раньше `/usr/bin`: для скриптов ставить `PATH=/usr/bin:/bin:$PATH`.
+- Клиентам (`9p`, `Syn`, `win`, `acme-lsp`) нужен тот же `NAMESPACE`. Из тега редактора всё наследуется само.
+- 9fans.net/go закреплён на v0.0.2: под неё написана обёртка draw редактора (в v0.0.7 переименованы константы).
 - Проверка GUI без пользователя: скриншот окна devdraw. `winlist` (Swift, в scratchpad; при необходимости пересобрать из `CGWindowListCopyWindowInfo`) даёт window id, затем `screencapture -x -o -l<id> out.png`. Нажатия клавиш за пользователя сделать нельзя; текст и команды — через `9p write acme/N/{addr,data,ctl,style}`.
-- `go vet ./...` в Edwood ругается на `file/buffer_adapter.go:53 unreachable` и свежий staticcheck на `xfid.go` SA4006 — upstream, не трогаем (правило «не чиним upstream внутри фич»).
+- `go vet` ругается на `editor/file/buffer_adapter.go:53 unreachable`, staticcheck — на `editor/xfid.go` SA4006: старые баги Edwood, теперь их можно чинить (отдельным коммитом).
 
 ## 4. Что сделано
 
 ### Клавиатура (Edwood `main`, спецификация `03`)
 - CUA: ↑↓ по строкам с липкой колонкой, Home/End по строке, Ctrl/Cmd-A/C/X/V/Z/Y/S/K, Ctrl-E = Execute (B2), Ctrl-O = Look (B3), Ctrl-L строка, Ctrl-D слово/следующее, Ctrl-F/Ctrl-G через тег (`Look `/`:` + Esc + Ctrl-E/O), Ctrl-N New, Tab/Ctrl-B Tab сдвиг строк.
-- Таблица действий `keys.go` (`Action`, `Keymap`, `ParseKey` для `C-x`, `Cmd-x`, `Left`, `F3`, `0xF800`), файл `~/.config/edwood/keys` (`key action`, `prefix key action`, `key -`), команда `Keys [reload|actions|file]`.
+- Таблица действий `keys.go` (`Action`, `Keymap`, `ParseKey` для `C-x`, `Cmd-x`, `Left`, `F3`, `0xF800`), файл `~/.config/doomcode/keys` (`key action`, `prefix key action`, `key -`), команда `Keys [reload|actions|file]`.
 - Префикс `Ctrl-B` (`prefix.go`): стрелки/o/;/0–9 фокус, t тег⇄тело, : командная строка, c/%/x/& New/Newcol/Del/Delcol, z/Z/+ размер, s/S Sort/Putall, g/G начало/конец, Enter/`/` Execute/Look, Space якорь, b блок, Tab outdent. Повторный Ctrl-B держит префикс (литерала нет из-за автоповтора), Esc отменяет, курсор-ромб.
 - Фокус по щелчку по умолчанию (`-b=true`), `-b=false` — под мышью; до первого щелчка под мышью; навигация переносит указатель.
 - Якорь выделения (`select.go`): каретка-модель `caret`/`moveCaret`, `anchorOn/anchor` в `Text`.
@@ -53,17 +56,17 @@ go test ./cmd/Syn/                             # тесты Syn (cgo, tree-sitte
 ## 5. План (приоритет сверху вниз)
 
 1. ~~**Инкрементальный разбор в `Syn`.**~~ Готово 2026-10-05 (`cmd/Syn/doc.go`, `changes.go`; тесты сверяют инкрементальный результат с полным). Было задумано так: держать локальную копию текста (`[]byte` + индекс рун→байты), применять сообщения `changes` (`I q0 q1 0 n text`, `D q0 q1 0 0`; при `n=0` для длинных вставок текст читать через `addr`/`xdata`) к копии и к дереву через `tree.Edit(InputEdit)`, парсить с `oldTree`, и писать только изменившиеся отрезки: `clear q0 q1` + отрезки затронутого диапазона (объединение изменённых диапазонов из `tree.ChangedRanges(old)`). Сверка целостности: раз в N правок или при расхождении длины — полная перечитка. Тест: последовательность правок даёт тот же результат, что полный разбор.
-2. ~~**Файл `theme`**~~ Готово 2026-10-05 (`theme/themefile.go`, `edwood/themefile.go`, команда `Theme`). Было задумано: строки `style <имя> fg=#rrggbb bg=#rrggbb underline line=#rrggbb`, плюс переопределение палитры (`tag.back=…`, `text.text=…`) — по возможности; применяется поверх выбранной `-palette`; команда `Theme reload`. Реализация: парсер в `theme`, `StyleSet` пересоздаётся, все `Text` → `Restyle` видимого.
+2. ~~**Файл `theme`**~~ Готово 2026-10-05 (`theme/themefile.go`, `editor/themefile.go`, команда `Theme`). Было задумано: строки `style <имя> fg=#rrggbb bg=#rrggbb underline line=#rrggbb`, плюс переопределение палитры (`tag.back=…`, `text.text=…`) — по возможности; применяется поверх выбранной `-palette`; команда `Theme reload`. Реализация: парсер в `theme`, `StyleSet` пересоздаётся, все `Text` → `Restyle` видимого.
 3. ~~**Диагностика LSP через `style`**~~ Готово 2026-10-05: мост `cmd/Diag` читает окно `/LSP/Diagnostics` acme-lsp через `changes`; `Syn` и `Diag` чистят только свои имена стилей. acme-lsp (`~/go/bin/acme-lsp`, `L`) и gopls установлены. Было задумано: писать `error`/`warning`/`info`/`hint` в `style` с `clear q0 q1 error warning info hint`. Диагностика по умолчанию — подчёркивание + слабый фон (уже в теме).
 4. ~~**Остатки клавиатуры**~~ Готово 2026-10-05 (`winops.go`): F3/`Ctrl-B n`, `+windows`, `{ } [ ]`, `q`, `−`. Не проверено вручную (нажатия клавиш за пользователя невозможны), покрыто unit-тестами.
 5. ~~**Фаза 2 клавиатуры**~~ Готово и проверено пользователем 2026-10-05/06 (plan9port ветка `devdraw/modkeys` efc9ace7, devdraw пересобран; Edwood `keysmod.go` 3fc5e17). Было задумано: коды `0xF200 | mods<<5 | key`, включение `DEVDRAW_MODKEYS=1`; тогда Shift+стрелки, Ctrl+стрелки, Ctrl+Enter, Ctrl+Backspace. Файлы `src/cmd/devdraw/mac-screen.m` (`doCommandBySelector`), `x11-screen.c`; пересборка `cd src/cmd/devdraw && mk install`.
-6. ~~**Автоформатирование при Put**~~ Готово и проверено пользователем 2026-10-08; пересечение с acmego `-f` и acme-lsp `FormatOnPut` известно, решено оставить (`docs/07` §4, `docs/04` §3) (`docs/07-format-spec.md`; Edwood `fmtfile.go`, `format.go`, вызов в `put`): файл `~/.config/edwood/fmt` «суффикс → фильтр», по умолчанию `.go gofmt`, команда `Fmt [reload|rules|file|cmd…]`, минимальная замена текста с сохранением выделения и стилей. Проверить: испортить отступы в .go, Ctrl-S — текст выровнен, выделение на месте; синтаксическая ошибка — сообщение в `+Errors`, файл записан как есть; `Undo` возвращает неформатированный текст.
+6. ~~**Автоформатирование при Put**~~ Готово и проверено пользователем 2026-10-08; пересечение с acmego `-f` и acme-lsp `FormatOnPut` известно, решено оставить (`docs/07` §4, `docs/04` §3) (`docs/07-format-spec.md`; Edwood `fmtfile.go`, `format.go`, вызов в `put`): файл `~/.config/doomcode/fmt` «суффикс → фильтр», по умолчанию `.go gofmt`, команда `Fmt [reload|rules|file|cmd…]`, минимальная замена текста с сохранением выделения и стилей. Проверить: испортить отступы в .go, Ctrl-S — текст выровнен, выделение на месте; синтаксическая ошибка — сообщение в `+Errors`, файл записан как есть; `Undo` возвращает неформатированный текст.
 7. ~~**Ошибки разбора в `Syn`**~~ Готово 2026-10-08, пользователь: «в целом работает, позже допилим» (`cmd/Syn/errors.go`, `docs/05` §8): узлы ERROR и MISSING tree-sitter отмечаются стилем `error.syntax`. Проверить: в .go заменить `c` в `func` на кириллическую «с» — подчёркивается объявление; убрать `)` в вызове — подчёркивается токен перед ним; вернуть — отметка уходит; метки `Diag` при этом не стираются.
-8. ~~**TypeScript и fenced-блоки Markdown в `Syn`**~~ Готово и проверено пользователем 2026-10-08 (`cmd/Syn/fence.go`, `lang.go`, `docs/05` §8; новая зависимость — грамматика `tree-sitter-typescript` v0.23.2, того же рода, что остальные). Проверено скриншотом: Go в блоке, TS внутри списка, Python внутри цитаты, отдельный `.ts`. Замер: полный разбор `edwood/text.go` (40 КБ) и `docs/03` (35 КБ) — около 0,2 с вместе с запуском процесса, `Syn` не узкое место.
-9. ~~**Блочные комментарии в Ctrl-B /**~~ Готово и проверено пользователем 2026-10-08 (плюс Ctrl-/ и Cmd-/ на то же действие, Edwood cd34041) (`edwood/comment.go`, `docs/03` §4): `<!-- -->` для md, html, xml, svg, vue; `/* */` для css. Проверить: в .md выделить два абзаца, Ctrl-B / — обёрнуты одной парой, ещё раз — развёрнуты; каретка на строке — оборачивается только эта строка.
-10. ~~**`%f` в правилах `fmt`**~~ Готово 2026-10-08, ждёт ручной проверки (`edwood/format.go`, `docs/07` §2). Проверить: правило `.ts prettier --stdin-filepath %f` (если prettier установлен) форматирует .ts при Ctrl-S.
+8. ~~**TypeScript и fenced-блоки Markdown в `Syn`**~~ Готово и проверено пользователем 2026-10-08 (`cmd/Syn/fence.go`, `lang.go`, `docs/05` §8; новая зависимость — грамматика `tree-sitter-typescript` v0.23.2, того же рода, что остальные). Проверено скриншотом: Go в блоке, TS внутри списка, Python внутри цитаты, отдельный `.ts`. Замер: полный разбор `editor/text.go` (40 КБ) и `docs/03` (35 КБ) — около 0,2 с вместе с запуском процесса, `Syn` не узкое место.
+9. ~~**Блочные комментарии в Ctrl-B /**~~ Готово и проверено пользователем 2026-10-08 (плюс Ctrl-/ и Cmd-/ на то же действие, Edwood cd34041) (`editor/comment.go`, `docs/03` §4): `<!-- -->` для md, html, xml, svg, vue; `/* */` для css. Проверить: в .md выделить два абзаца, Ctrl-B / — обёрнуты одной парой, ещё раз — развёрнуты; каретка на строке — оборачивается только эта строка.
+10. ~~**`%f` в правилах `fmt`**~~ Готово 2026-10-08, ждёт ручной проверки (`editor/format.go`, `docs/07` §2). Проверить: правило `.ts prettier --stdin-filepath %f` (если prettier установлен) форматирует .ts при Ctrl-S.
 
-11. ~~**Клавиши для команд, acme-lsp с клавиатуры**~~ Готово 2026-10-08, ждёт ручной проверки (`edwood/keyrun.go`, `docs/03` §5.4): действия `run <команда>` и `tag <текст>` в файле `keys`; по умолчанию F12 и Ctrl-B d = `L def`, Ctrl-B r = `L refs`, F2 и Ctrl-B R = `tag L rn`, Option-Esc = `L comp -e`, Ctrl-B h/i/k = `L hov/impls/sig`. Проверить с запущенным acme-lsp: курсор на имени, F12 (fn+F12) — открывается определение; Ctrl-B r — ссылки в `+Errors`; F2 — в теге `L rn `, набрать имя, Esc, Ctrl-E — переименовано; Option-Esc после начала имени — дополнение.
+11. ~~**Клавиши для команд, acme-lsp с клавиатуры**~~ Готово 2026-10-08, ждёт ручной проверки (`editor/keyrun.go`, `docs/03` §5.4): действия `run <команда>` и `tag <текст>` в файле `keys`; по умолчанию F12 и Ctrl-B d = `L def`, Ctrl-B r = `L refs`, F2 и Ctrl-B R = `tag L rn`, Option-Esc = `L comp -e`, Ctrl-B h/i/k = `L hov/impls/sig`. Проверить с запущенным acme-lsp: курсор на имени, F12 (fn+F12) — открывается определение; Ctrl-B r — ссылки в `+Errors`; F2 — в теге `L rn `, набрать имя, Esc, Ctrl-E — переименовано; Option-Esc после начала имени — дополнение.
 
 ## 5b. Отложенные задачи (решение пользователя 2026-10-08: пока не делать)
 
@@ -93,8 +96,8 @@ go test ./cmd/Syn/                             # тесты Syn (cgo, tree-sitte
 
 ## 6. Правила, о которых легко забыть
 
-- Ветки по разделам спецификации (`keys/*`, `style/*`, `fmt/*`, `devdraw/*`), маленькие коммиты с тестами, `main` только fast-forward после ручной проверки пользователем; коммиты в стиле Go с ссылкой на раздел спецификации; подпись `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
-- Инварианты: совместимость acme(4) (новые файлы только добавляются), мышиная модель Acme не меняется, стили — слой поверх текста (`body` чистый), привязки клавиш только через `keys.go`, без cgo в ядре Edwood (в `Syn` можно), без новых зависимостей без обсуждения, путь модуля `github.com/rjkroege/edwood` не менять.
+- Основная ветка `main`; крупная работа — в ветке по разделу (`keys/*`, `style/*`, `org/*`) со слиянием в `main`; маленькие коммиты с тестами; коммиты в стиле Go с ссылкой на раздел спецификации и подписью `Co-Authored-By` (текущая модель указана в системных подсказках).
+- Инварианты: совместимость acme(4) (сервис `acme`, новые файлы только добавляются), мышиная модель Acme не меняется, стили — слой поверх текста (`body` чистый), привязки клавиш только через таблицы `editor/keys.go` и `prefix.go`, без cgo в редакторе (в `Syn` можно), без новых зависимостей без обсуждения. Ограничения ради апстрима (не переименовывать модуль, не чинить старые баги Edwood) сняты 2026-10-08.
 - Каждое отличие от Acme — строка в `docs/90-differences-from-acme.md`.
 - Перед диагностикой «что сломано» проверять, какой бинарник реально запущен (`lsof -p <pid> | grep txt`), и сверять с окружением пользователя (`zsh -lic 'which -a devdraw'`). Два цикла ушли на патчи Go-devdraw, который попал в работу только из-за моего PATH.
 - Остановиться и спросить пользователя: при изменении принятых решений, при нарушении инвариантов, при необходимости его действий на GitHub, при неясном UX-выборе. Остальное решать самостоятельно и подтверждать тестами и скриншотами.

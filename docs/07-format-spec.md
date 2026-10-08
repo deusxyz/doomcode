@@ -18,7 +18,7 @@ Fmt: /…/acmefs.go: gofmt failed; text left unchanged
 
 ## 2. Файл `fmt`
 
-`$EDWOOD_FMT`, иначе `$XDG_CONFIG_HOME/edwood/fmt`, иначе `~/.config/edwood/fmt`. Накладывается на правила по умолчанию, поэтому в нём только изменения.
+`$DOOMCODE_FMT`, иначе `$XDG_CONFIG_HOME/doomcode/fmt`, иначе `~/.config/doomcode/fmt`. Накладывается на правила по умолчанию, поэтому в нём только изменения.
 
 ```
 # суффикс (с точкой) или точное имя файла, затем команда и аргументы

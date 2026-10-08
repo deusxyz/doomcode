@@ -1,39 +1,33 @@
 # Процесс разработки и правила кода
 
-Дата: 2026-10-05. Относится к форку Edwood в `~/projects/justcode/edwood` и к документам в `~/projects/justcode/docs`.
+Дата: 2026-10-05, переработано 2026-10-08 (свой проект, один репозиторий). Пути ниже — от корня репозитория doomcode.
 
 ## 1. Устройство репозиториев
 
 ```
-~/projects/justcode/            рабочий каталог проекта (пока без git)
+doomcode/                       один репозиторий, один Go-модуль github.com/deusxyz/doomcode
+  editor/                       редактор: бывший форк Edwood, история сохранена (пакет main и подпакеты)
+  cmd/Syn, cmd/Diag             подсветка на tree-sitter и мост диагностики acme-lsp
+  internal/acmefs               общие 9P-помощники
   docs/                         спецификации и решения, на русском, нумерованные
-  bin/edwood                    свежая сборка для ручной проверки (не в git)
-  CLAUDE.md                     инструкции для Claude по этому проекту
-  edwood/                       клон Edwood, здесь живёт код
-  build.sh, run.sh              сборка обоих бинарников в bin/ и запуск с нужным окружением
-~/projects/plan9                plan9port, справочник и источник devdraw/9p/fontsrv
-~/projects/9fans/go             клон форка 9fans.net/go (origin = deusxyz/9fans-go, upstream = 9fans/go);
-                                ветка devdraw/keys — правки cmd/devdraw для upstream; в работе не используется
-~/projects/plan9                plan9port: справочник и рабочий devdraw ($PLAN9/bin/devdraw); для фазы 2 понадобится форк 9fans/plan9port
+  .github/workflows/doomcode.yml  CI: проверки редактора на трёх ОС, тесты Syn/Diag
+  build.sh, run.sh              сборка bin/doomcode, bin/Syn, bin/Diag и запуск с нужным окружением
+  bin/                          сборки для ручной проверки (не в git)
+~/projects/edwood               клон форка deusxyz/edwood: ветка upstream-compat — «лазейка» к апстриму
+~/projects/plan9                plan9port (форк deusxyz/plan9port): рабочий devdraw, ветка devdraw/modkeys
+~/projects/9fans/go             форк deusxyz/9fans-go: ветка devdraw/keys для Go-devdraw, в работе не используется
 ```
 
-Git-remotes в `edwood/`:
+**Решение от 2026-10-08: свой проект без оглядки на апстрим.** Правки могут разойтись с философией Edwood и взглядами его мейнтейнеров, поэтому doomcode развивается свободно: модуль переименован, редактор перенесён в общий репозиторий, старые баги Edwood чиним там, где нашли. **Лазейка:** в форке `deusxyz/edwood` ветка `upstream-compat` (коммит `2a193e4`) — последняя точка, где наши правки лежат чистыми коммитами поверх `rjkroege/edwood` и превращаются в PR без переделки; `master` форка — зеркало апстрима. Если захотим что-то отдать сообществу, берём коммиты оттуда или переносим правку вручную.
 
-- `upstream` = `https://github.com/rjkroege/edwood.git` (уже настроен, ветка `master`).
-- `origin` = форк на GitHub под вашим аккаунтом. **Его создаёте вы** (кнопка Fork на github.com/rjkroege/edwood), затем присылаете URL, я добавлю remote и выставлю `push.default`. До этого вся работа идёт локально, ничего не теряется.
+CI унаследован от Edwood: gofmt, vet, staticcheck, misspell, тесты на Linux, macOS и Windows; Syn и Diag тестируются без Windows (tree-sitter требует cgo).
 
-Почему форк на GitHub, а не только локальный клон: резервная копия, CI из коробки (в репозитории уже есть `.github/workflows/edwood.yml` с gofmt, vet, staticcheck, misspell, тестами на трёх ОС), и возможность отправить часть изменений upstream pull-request'ом, если захотим.
+## 2. Ветки
 
-Имя форка пока оставляем `edwood`, путь модуля `github.com/rjkroege/edwood` **не меняем**: переименование модуля трогает каждый файл и сделает слияние с upstream невозможным. Переименуем, если проект разойдётся с Edwood окончательно; это отдельное решение.
-
-## 2. Ветки и слияние с upstream
-
-- `master` — зеркало `upstream/master`, в него не коммитим напрямую.
-- `main` — наша интеграционная ветка (создаётся при первом слиянии фичи). В ней всегда зелёные тесты и работающая сборка.
-- Фичи — в ветках по разделам спецификации: `keys/phase1`, `keys/prefix`, `keys/config`, `style/frame`, `style/fs`, `fmt/put`, `devdraw/modkeys`.
-- Раз в неделю или перед началом новой фичи: `git fetch upstream && git rebase upstream/master` для фичевых веток, merge в `main`. Конфликты решаем сразу, пока маленькие.
-- Коммиты маленькие и атомарные: один коммит — одно изменение поведения с тестом. Сообщение на английском в стиле Go: `text: move the cursor by line on Up/Down`, тело поясняет «почему», ссылается на раздел спецификации (`docs/03-keyboard-spec.md §2`).
-- Пуш и pull-request — только по вашей команде.
+- `main` — основная ветка. В ней всегда зелёные тесты и работающая сборка.
+- Крупная или рискованная работа — в ветке по разделу спецификации (`keys/*`, `style/*`, `fmt/*`, `org/*`), затем слияние в `main`. Мелкие правки — сразу в `main`.
+- Коммиты маленькие и атомарные: один коммит — одно изменение поведения с тестом. Сообщение на английском в стиле Go: `editor: move the cursor by line on Up/Down`, тело поясняет «почему», ссылается на раздел спецификации (`docs/03-keyboard-spec.md §2`).
+- Пользователь разрешил коммитить и пушить по ходу работы; публичные действия за пределами своих репозиториев (PR в чужие проекты, issues) — только по его команде.
 
 ## 3. Разделение труда
 
@@ -41,7 +35,7 @@ Git-remotes в `edwood/`:
 |---|---|
 | Спецификация раздела, открытые вопросы | Claude пишет, вы решаете |
 | Реализация в фичевой ветке, тесты, lint | Claude |
-| Сборка в `~/projects/justcode/bin/edwood`, инструкция «что потрогать» | Claude |
+| Сборка в `bin/doomcode`, инструкция «что потрогать» (`docs/test-plan.md`) | Claude |
 | Ручная проверка, замечания | вы |
 | Правки по замечаниям, обновление спецификации, если решение изменилось | Claude |
 | Коммит/merge в `main` после приёмки | Claude по вашей команде |
@@ -75,28 +69,17 @@ Git-remotes в `edwood/`:
 7. **Новая зависимость — отдельное решение.** Сейчас их мало, пусть так и остаётся.
 8. **Каждое отличие от Acme записано.** Файл `docs/90-differences-from-acme.md` ведётся как журнал: что изменили, почему, как вернуть старое поведение (если можно).
 9. **Тесты через существующие леса.** `MakeWindowScaffold` и `dumpfile.Content` дают окно с мок-фреймом без дисплея; тесты не требуют devdraw.
-10. **Не чиним upstream походя.** Нашли баг в коде Edwood, не связанный с задачей — отдельная ветка и, по возможности, PR в upstream, а не правка внутри фичи. (Пример: свежий staticcheck ругается на `xfid.go:983` SA4006 — это upstream, не трогаем в `keys/phase1`.)
+10. **Старые баги Edwood чиним отдельным коммитом.** Нашли баг, не связанный с задачей, — отдельный коммит с тестом, а не правка внутри фичи (раньше их не трогали ради слияния с апстримом; с 2026-10-08 это ограничение снято).
 
 ## 5. Как собрать и запустить
 
 ```bash
-cd ~/projects/justcode/edwood && go build -o ../bin/edwood . && ./presub.sh
+./build.sh                       # bin/doomcode, bin/Syn, bin/Diag
+cd editor && ./presub.sh         # gofmt -s, vet, misspell, staticcheck для редактора
+go test ./...                    # все тесты; тестам редактора нужен rc в PATH ($PLAN9/bin) или acmeshell=sh
+./run.sh docs/                   # запуск
 ```
 
-Сборка Edwood (с `--go-devdraw` соберёт и Go-devdraw из форка 9fans-go для экспериментов):
+Запуск рядом с работающим plan9port acme (у них одно имя сервиса `acme`, поэтому отдельное пространство имён): `run.sh` выставляет `PLAN9`, `PATH` с `bin/`, `~/go/bin` (там `L` из acme-lsp) и `$PLAN9/bin`, `NAMESPACE=/tmp/ns.doomcode` и `DEVDRAW=$PLAN9/bin/devdraw` (C-devdraw из plan9port с патчем модификаторов; Go-devdraw отвергнут, см. спецификацию клавиатуры §15); остальные аргументы уходят редактору.
 
-```bash
-~/projects/justcode/build.sh
-```
-
-Запуск рядом с работающим plan9port acme (у них одно имя сервиса `acme`, поэтому отдельное пространство имён):
-
-```bash
-~/projects/justcode/run.sh ~/projects/justcode/docs/
-```
-
-Скрипт выставляет `PLAN9`, `NAMESPACE=/tmp/ns.edwood` и `DEVDRAW=$PLAN9/bin/devdraw` (C-devdraw из plan9port; Go-devdraw отвергнут, см. спецификацию клавиатуры §15); остальные аргументы уходят Edwood.
-
-Клиентам (`win`, `9p`, `acme-lsp`) нужен тот же `NAMESPACE=/tmp/ns.edwood`. `DEVDRAW` указывает на наш форк: без него будет взят `devdraw` из PATH (у вас это Go-devdraw из `~/go/bin`, без автоповтора и Cmd).
-
-Правки Go-devdraw живут в форке 9fans-go (ветка `devdraw/keys`) как вклад в upstream 9fans/go; рабочий devdraw — C-версия из plan9port, её правки для фазы 2 пойдут в форк 9fans/plan9port.
+Клиентам (`win`, `9p`, `acme-lsp`) нужен тот же `NAMESPACE=/tmp/ns.doomcode`; из тега редактора всё наследуется само. В PATH пользователя `$PLAN9/bin` стоит раньше `/usr/bin`, и `sed`, `diff`, `ls` оттуда ломают скрипты: для них ставить `PATH=/usr/bin:/bin:$PATH`.

@@ -1,27 +1,29 @@
-# justcode
+# doomcode
 
-Доработанный Acme на базе форка Edwood (Go). Обсуждение и документы — на русском; код, комментарии и коммиты — на английском.
+Минималистичный, удобный и быстрый редактор для разработчиков с гибкой настройкой и расширением; вырос из форка Edwood (Go-версии Acme), с 2026-10-08 — свой проект без оглядки на апстрим. Обсуждение и документы — на русском; код, комментарии и коммиты — на английском.
 
 ## Где что
 
-- `docs/` — спецификации и решения, читать перед работой над разделом: `01` обзор Acme, `02` рамки и инварианты, `03` клавиатура, `04` процесс и правила кода, `05` подсветка (файл `style`), `06` **состояние и план — читать первым после сжатия контекста**, `07` автоформатирование (файл `fmt`, команда `Fmt`), `90` журнал отличий от Acme, `test-plan.md` — что пользователю осталось проверить руками (держать в актуальном состоянии).
-- `edwood/` — клон Edwood, remote `upstream` = rjkroege/edwood. Код правим только здесь, в фичевых ветках (`keys/*`, `style/*`, `fmt/*`, `devdraw/*`).
-- `~/projects/9fans/go` — клон форка 9fans-go (origin = deusxyz/9fans-go, upstream = 9fans/go), ветка `devdraw/keys`: правки Go-devdraw только для upstream; в работе Go-devdraw НЕ используется (медленный, без курсоров/колеса, неверные Backspace/Delete).
-- Рабочий devdraw — C-версия plan9port `$PLAN9/bin/devdraw`; фаза 2 (модификаторы) — патч plan9port в форке.
-- `cmd/Syn` — подсветчик на tree-sitter (cgo допустим: внешняя программа); `cmd/Diag` — мост диагностики acme-lsp → `style`; `internal/acmefs` — общие 9P-помощники; модуль `justcode` в корне.
-- `bin/edwood`, `bin/Syn`, `bin/Diag` — сборки для ручной проверки, не в git.
-- `~/projects/plan9` (plan9port) — справочные исходники и рабочий devdraw; пока только читать.
+- `docs/` — спецификации и решения, читать перед работой над разделом: `00` миссия, `01` обзор Acme, `02` рамки и инварианты, `03` клавиатура, `04` процесс и правила кода, `05` подсветка (файл `style`), `06` **состояние и план — читать первым после сжатия контекста**, `07` автоформатирование (файл `fmt`, команда `Fmt`), `08` идеи, `90` журнал отличий от Acme, `test-plan.md` — что пользователю осталось проверить руками (держать в актуальном состоянии).
+- Один Go-модуль `github.com/deusxyz/doomcode`:
+  - `editor/` — редактор (бывший форк Edwood, история сохранена), пакет main и подпакеты `frame`, `file`, `theme`, `draw` и др.;
+  - `cmd/Syn` — подсветчик на tree-sitter (cgo допустим: внешняя программа); `cmd/Diag` — мост диагностики acme-lsp → `style`; `internal/acmefs` — общие 9P-помощники.
+- `bin/doomcode`, `bin/Syn`, `bin/Diag` — сборки для ручной проверки, не в git.
+- `~/projects/edwood` — клон форка deusxyz/edwood: ветка `upstream-compat` — «лазейка» на случай, если захотим отдать что-то апстриму. Там не работаем.
+- `~/projects/plan9` (plan9port, форк deusxyz/plan9port) — рабочий devdraw `$PLAN9/bin/devdraw`, собранный из ветки `devdraw/modkeys` (модификаторы спецклавиш).
+- `~/projects/9fans/go` — форк 9fans-go, ветка `devdraw/keys`: Go-devdraw в работе НЕ используется (медленный, без курсоров/колеса, неверные Backspace/Delete).
 
 ## Команды
 
-- Сборка: `./build.sh` (edwood и Syn в `bin/`); тесты Syn: `go test ./cmd/Syn/`; проверка: `cd edwood && ./presub.sh` (gofmt -s, vet, staticcheck, misspell, go test -race). Тестам нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе TestRunproc/TestMntDecRef падают — это окружение, не flaky.
-- Запуск: `./run.sh <файлы>`; он выставляет `DEVDRAW=$PLAN9/bin/devdraw` и `NAMESPACE=/tmp/ns.edwood`, потому что у пользователя может параллельно работать plan9port acme с сервисом `acme`. Его не трогать.
+- Сборка: `./build.sh`; проверка редактора: `cd editor && ./presub.sh` (gofmt -s, vet, staticcheck, misspell); тесты: `go test -race ./...`. Тестам редактора нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе TestRunproc/TestMntDecRef падают — это окружение, не flaky. В PATH пользователя `$PLAN9/bin` раньше `/usr/bin`: для скриптов ставить `PATH=/usr/bin:/bin:$PATH`.
+- Запуск: `./run.sh <файлы>`; он выставляет `DEVDRAW=$PLAN9/bin/devdraw`, `NAMESPACE=/tmp/ns.doomcode` и `~/go/bin` в PATH, потому что у пользователя может параллельно работать plan9port acme с сервисом `acme`. Его не трогать.
 
 ## Правила
 
-- Инварианты из `docs/02-scope-v1.md`: совместимость acme(4), мышиная модель Acme, стили поверх текста.
-- Привязки клавиш — только через `keys.go` (`defaultBindings`, `actionTable`), не новые `case` в `Text.Type`; настраиваемое — в конфиге.
-- Каждое изменение поведения: тест через `MakeWindowScaffold` + запись в `docs/90-differences-from-acme.md`.
-- Не переименовывать модуль `github.com/rjkroege/edwood`, не чинить upstream-баги внутри фичевых веток, не добавлять зависимости и cgo без обсуждения.
-- Коммиты только по команде пользователя; пуш и PR тоже.
-- Сообщения коммитов в стиле Go: `text: move the cursor by line on Up/Down`, в теле ссылка на раздел спецификации.
+- Инварианты из `docs/02-scope-v1.md`: совместимость acme(4) (имя сервиса `acme`, существующие файлы окон), мышиная модель Acme, стили поверх текста.
+- Перед новой функцией — проверка на дублирование с acme-lsp, acmego и другими инструментами (`docs/04` §3).
+- Привязки клавиш — только через таблицы в `editor/keys.go` (`defaultBindings`, `actionTable`) и `prefix.go`, не новые `case` в `Text.Type`; настраиваемое — в конфиге `~/.config/doomcode`.
+- Каждое изменение поведения: тест через `MakeWindowScaffold` + запись в `docs/90-differences-from-acme.md`; что проверить руками — в `docs/test-plan.md`.
+- Старые баги Edwood можно чинить, отдельным коммитом. Новые зависимости и cgo в редакторе — только после обсуждения.
+- Коммитить и пушить по ходу работы пользователь разрешил; действия в чужих репозиториях (PR, issues) — только по его команде.
+- Сообщения коммитов в стиле Go: `editor: move the cursor by line on Up/Down`, в теле ссылка на раздел спецификации; подпись `Co-Authored-By`.

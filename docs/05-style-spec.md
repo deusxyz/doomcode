@@ -96,7 +96,7 @@ Edwood сам поддерживает отрезки при вставках и
 
 **Палитры.** В `theme` четыре палитры (`acme`, `vampira`, `solarizedlight`, `solarizeddark`), в каждой таблица стилей. Светлая: приглушённые цвета в духе Acme (комментарии серо-зелёные, ключевые слова тёмно-синие, строки коричневые, типы бирюзовые).
 
-**Файл темы** (готово): `$EDWOOD_THEME`, иначе `$XDG_CONFIG_HOME/edwood/theme`, иначе `~/.config/edwood/theme`; накладывается на палитру при старте. Строки: `palette vampira` (база, если не задан `-palette`), `style keyword fg=#1f3a93 bg=#… line=#… underline|nounderline`, `style variable -` (убрать стиль), `text.back #ffffea mix #ffffff` и другие слоты палитры (`tag.*`, `text.*`: back high bord text htext tick; `ui.modbutton ui.colbutton ui.but2 ui.but3`). Цвета `#rgb`, `#rrggbb`, `#rrggbbaa`; `#` перед не-hex — комментарий. Команда `Theme` печатает действующие стили в синтаксисе файла, `Theme reload` перечитывает файл и перекрашивает окна (слоты палитры — после перезапуска), `Theme file`, `Theme slots`.
+**Файл темы** (готово): `$DOOMCODE_THEME`, иначе `$XDG_CONFIG_HOME/doomcode/theme`, иначе `~/.config/doomcode/theme`; накладывается на палитру при старте. Строки: `palette vampira` (база, если не задан `-palette`), `style keyword fg=#1f3a93 bg=#… line=#… underline|nounderline`, `style variable -` (убрать стиль), `text.back #ffffea mix #ffffff` и другие слоты палитры (`tag.*`, `text.*`: back high bord text htext tick; `ui.modbutton ui.colbutton ui.but2 ui.but3`). Цвета `#rgb`, `#rrggbb`, `#rrggbbaa`; `#` перед не-hex — комментарий. Команда `Theme` печатает действующие стили в синтаксисе файла, `Theme reload` перечитывает файл и перекрашивает окна (слоты палитры — после перезапуска), `Theme file`, `Theme slots`.
 
 **Выделение.** Внутри выделения текст рисуется цветом `HText` на фоне `High`, как в Acme: выделение важнее стилей, и так оно всегда одинаково заметно. Подчёркивание диагностики под выделением сохраняется.
 
@@ -136,7 +136,7 @@ Edwood сам поддерживает отрезки при вставках и
 
 ## 8. Программа `Syn`
 
-Внешняя программа в репозитории justcode (`cmd/Syn`), по образцу `acmego`/`Watch`:
+Внешняя программа в репозитории doomcode (`cmd/Syn`), по образцу `acmego`/`Watch`:
 
 - следит за `log` (new, get, put, zerox) и за открытыми окнами;
 - для окна с известным по имени файла языком читает `body`, строит дерево tree-sitter, пишет `clear` и отрезки в `style`;
@@ -164,7 +164,7 @@ Edwood сам поддерживает отрезки при вставках и
 6. `Syn` для Go и Markdown; затем остальные языки.
 7. Файл `theme` для пользовательских цветов.
 
-Шаги 1–5 — в Edwood, ветка `style/frame` → `style/fs`; шаг 6 — в justcode `cmd/Syn`.
+Шаги 1–5 — в Edwood, ветка `style/frame` → `style/fs`; шаг 6 — в doomcode `cmd/Syn`.
 
 ## 9a. Состояние реализации
 
@@ -177,10 +177,10 @@ Edwood сам поддерживает отрезки при вставках и
 | 3. `theme`: таблицы стилей для `acme`, `vampira`, `solarizedlight`, `solarizeddark`; `StyleSet` имя→индекс | готово, `f496adf` |
 | 4. `Text`: стили в `fill`/`Inserted`, `Text.Restyle`, ленивый `StyleSet` на дисплей | готово, `da6336f` |
 | 5. Файлы `style` (rw) и `changes` (ro, раздача всем читателям) в `xfid.go`/`fsys.go` | готово, `11e60ac` |
-| 6. `Syn` (tree-sitter): Go, C, JSON, Bash, Rust, Python, JavaScript, Markdown (блочная + inline-грамматика), `log` + `changes`, перезапись `clear`+отрезки с задержкой 100 мс, запись кусками по границам строк | готово, `cmd/Syn` в justcode; проверено на `keys.go` (740 отрезков, перекраска после правки через `data`) |
+| 6. `Syn` (tree-sitter): Go, C, JSON, Bash, Rust, Python, JavaScript, Markdown (блочная + inline-грамматика), `log` + `changes`, перезапись `clear`+отрезки с задержкой 100 мс, запись кусками по границам строк | готово, `cmd/Syn` в doomcode; проверено на `keys.go` (740 отрезков, перекраска после правки через `data`) |
 | 7. Файл `theme` для пользовательских цветов, команда `Theme` | готово; проверено скриншотом с переопределёнными ключевыми словами и фоном комментариев |
 
-`style/frame` слита в `main` (fast-forward), `build.sh` собирает `bin/edwood` и `bin/Syn`, `run.sh` ставит `bin/` в PATH. Запуск подсветки: открыть `.go` или `.md`, выполнить `Syn` в теге (B2 или Ctrl-E). `Syn -all` красит и переменные/операторы/пунктуацию; `Syn -v` пишет в `+Errors`, что перекрасил.
+`style/frame` слита в `main` (fast-forward), `build.sh` собирает `bin/doomcode` и `bin/Syn`, `run.sh` ставит `bin/` в PATH. Запуск подсветки: открыть `.go` или `.md`, выполнить `Syn` в теге (B2 или Ctrl-E). `Syn -all` красит и переменные/операторы/пунктуацию; `Syn -v` пишет в `+Errors`, что перекрасил.
 
 Языки `Syn` по суффиксам: `.go`, `.c .h`, `.json`, `.sh .bash .zsh`, `.rs`, `.py`, `.js .mjs .cjs .jsx`, `.md .markdown`. Запросы подсветки — файлы `cmd/Syn/queries/*.scm`, встроенные через `go:embed`; это `highlights.scm` самих грамматик (MIT) с небольшими правками, перечисленными в `queries/README.md`. `Syn` инкрементален: держит копию текста и дерево, применяет сообщения `changes` к обоим (`tree.Edit`), после паузы перепарсивает с старым деревом и пишет `clear q0 q1` плюс отрезки только для затронутой области (правки ∪ `ChangedRanges`, расширенные до целых строк и целых захватов). Полная перечитка — при открытии, при сообщении, которое не укладывается в копию, при длинной вставке без текста с очередью позади, и при расхождении длины тела (проверяется по `ctl` каждые 200 правок). `Syn -dump файл` печатает полную разметку для отладки. Проверено на `devdraw.c` (32 177 рун): после серии правок разметка в редакторе совпала с полной рун в руну. Не поддержаны: TypeScript, Markdown внутри fenced-блоков, Plan 9 `rc`. Библиотека `9fans.net/go/acme` не открывает незнакомые имена файлов, поэтому `style` и `changes` открываются напрямую через `plan9/client`.
 

@@ -1,6 +1,6 @@
 # Acme: что это, чем отличается, что из него выросло
 
-Обзор для проекта justcode. Источники: исходники plan9port (`~/projects/plan9/src/cmd/acme`, `plumb`, `sam`), man-страницы acme(1), acme(4), plumb(7), plumber(4), sam(1), статья Р. Пайка «Acme: A User Interface for Programmers» (USENIX 1994), документация и обсуждения современных форков (ссылки в конце). Дата: 2026-10-04.
+Обзор для проекта doomcode. Источники: исходники plan9port (`~/projects/plan9/src/cmd/acme`, `plumb`, `sam`), man-страницы acme(1), acme(4), plumb(7), plumber(4), sam(1), статья Р. Пайка «Acme: A User Interface for Programmers» (USENIX 1994), документация и обсуждения современных форков (ссылки в конце). Дата: 2026-10-04.
 
 ---
 

@@ -26,7 +26,7 @@
 - [ ] **Ctrl-B i** на интерфейсе: реализации в `+Errors`.
 - [ ] **Ctrl-B k** внутри скобок вызова: сигнатура в `+Errors`.
 - [ ] Без запущенного acme-lsp **F12**: понятное сообщение в `+Errors`, редактор не зависает.
-- [ ] Своя привязка: в `~/.config/edwood/keys` строка `F5 run go test ./...`, затем `Keys reload`. **F5** в окне Go-пакета запускает тесты, вывод в `+Errors`.
+- [ ] Своя привязка: в `~/.config/doomcode/keys` строка `F5 run go test ./...`, затем `Keys reload`. **F5** в окне Go-пакета запускает тесты, вывод в `+Errors`.
 - [ ] `Keys` показывает новые привязки, `Keys actions` перечисляет `run <command>` и `tag <text>`.
 
 ## Диагностика `Diag` (`docs/05` §8)
@@ -47,6 +47,6 @@
 
 Нужен установленный prettier (`npm i -g prettier`); без него пункт пропустить.
 
-- [ ] В `~/.config/edwood/fmt` строка `.ts prettier --stdin-filepath %f`, затем `Fmt reload`.
+- [ ] В `~/.config/doomcode/fmt` строка `.ts prettier --stdin-filepath %f`, затем `Fmt reload`.
 - [ ] Испортить отступы в `.ts`, **Ctrl-S**: текст отформатирован, файл записан.
 - [ ] Синтаксическая ошибка в `.ts`, **Ctrl-S**: сообщение в `+Errors` с путём к файлу, файл записан как есть.
