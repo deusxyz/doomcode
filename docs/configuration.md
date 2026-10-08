@@ -34,7 +34,9 @@
 ### `config` — общие настройки
 
 ```
-palette      doom-dark                            # палитра
+palette      doom-dark                            # палитра, имя темы из themes/ или auto
+palette.light doom-light                          # для auto: палитра при светлой теме системы
+palette.dark  doom-dark                           # для auto: при тёмной
 font         /mnt/font/Avenir-Book/14a/font       # пропорциональный шрифт
 font.fixed   /mnt/font/Menlo-Regular/13a/font     # моноширинный шрифт
 window       1600x1000                            # размер окна, можно @X,Y
@@ -48,6 +50,7 @@ tabexpand    off                                  # on — Tab вставляе�
 | Настройка | По умолчанию | Перекрывает флаг / переменная |
 |---|---|---|
 | `palette` | `doom-light` | `-palette` |
+| `palette.light`, `palette.dark` | `doom-light`, `doom-dark` | — |
 | `font`, `font.fixed` | шрифты палитры на macOS, иначе Lucida из plan9port | `-f`, `-F` |
 | `window` | `1024x768` | `-W` |
 | `columns` | `2` | `-c` |
@@ -55,6 +58,19 @@ tabexpand    off                                  # on — Tab вставляе�
 | `focus` | `click` | `-b` (`-b=false` — под мышью) |
 | `tabstop` | `4` | `$tabstop` |
 | `tabexpand` | `off` | `$tabexpand` |
+
+**Палитра как у системы.** `palette auto` выбирает `palette.light` или `palette.dark` по светлой или тёмной теме macOS (на Linux — по `gsettings … color-scheme`) и проверяет её раз в 5 секунд: сменили тему системы — через несколько секунд перекрасится и редактор, вместе со шрифтами палитры. `Theme ИМЯ` выключает слежение, `Theme auto` включает снова. Работает и флагом: `-palette auto`.
+
+**Свои темы.** Любой файл в `~/.config/doomcode/themes/` — палитра с именем файла. Формат — как у файла `theme`; строка `palette ИМЯ` задаёт встроенную палитру-основу (по умолчанию `doom-light`), дальше — только то, что меняется, или все слоты и стили для своей палитры; строки `font` и `font.fixed` задают шрифты темы. Например, файл `themes/mint`:
+
+```
+palette doom-dark
+style keyword fg=#7fd1b9
+text.back #1f2a2a
+font /mnt/font/Menlo-Regular/13a/font
+```
+
+После этого `palette mint` в `config`, `Theme mint` в теге или `-palette mint`. Имена встроенных палитр заняты. Файлы перечитываются при `Theme reload` и `Config reload`; `Theme list` показывает все палитры. Правила подбора цветов — `docs/10-theme-style-guide.md`.
 
 **Шрифты.** Каждая палитра doomcode предлагает свои шрифты, и на macOS они берутся, если ни флаг, ни `config` не задали шрифт: `doom-light` — Avenir 14 и Menlo 13, `doom-dark` — Helvetica Neue 14 и Menlo 13. У остальных палитр и на других системах — Lucida из plan9port. Системные шрифты macOS пишутся как `/mnt/font/<Имя>/<размер>a/font`; список — `fontsrv -p .` (из plan9port), шрифты семейства SF в нём не видны. Шрифт plan9port — путь к файлу `.font`. Если шрифт не открывается, редактор запускается с Lucida и пишет об этом в лог. Команда `Font` в теге окна переключает его между пропорциональным и моноширинным шрифтом.
 
@@ -81,7 +97,7 @@ text.back #fdf6e3                  # цвет окна (слот палитры)
 tag.back #eee8d5
 ```
 
-Файл накладывается на выбранную палитру. Палитру лучше выбирать в `config`; строка `palette ИМЯ` в `theme` тоже работает, но `config` и `-palette` её перекрывают. Цвета: `#rgb`, `#rrggbb`, `#rrggbbaa`. Слоты палитры: `tag.*` и `text.*` (`back high bord text htext tick`), `ui.modbutton ui.colbutton ui.but2 ui.but3`; после цвета можно указать `mix #ffffff` — смесь 50/50. Имена стилей подсветки: `comment keyword string number type function constant preproc heading emphasis link variable operator punctuation error warning info hint match diff.add diff.del diff.change`; имя с точкой (`error.syntax`) без своего цвета берёт цвет имени до точки. Команды: **`Theme ИМЯ`** — сразу переключить палитру (и шрифты, если они следуют за палитрой); `Theme list` — список палитр; `Theme reload` — перечитать файл и перекрасить всё; `Theme` — текущие стили в синтаксисе файла; `Theme slots` — список слотов; `Theme file` — путь. В примере `config/theme` все строки закомментированы: это цвета `doom-light` для справки.
+Файл накладывается на выбранную палитру. Палитру лучше выбирать в `config`; строка `palette ИМЯ` в `theme` тоже работает, но `config` и `-palette` её перекрывают. Цвета: `#rgb`, `#rrggbb`, `#rrggbbaa`. Слоты палитры: `tag.*` и `text.*` (`back high bord text htext tick`), `ui.modbutton ui.colbutton ui.but2 ui.but3`; после цвета можно указать `mix #ffffff` — смесь 50/50. Имена стилей подсветки: `comment keyword string number type function constant preproc heading emphasis link variable operator punctuation error warning info hint match diff.add diff.del diff.change`; имя с точкой (`error.syntax`) без своего цвета берёт цвет имени до точки. Команды: **`Theme ИМЯ`** — сразу переключить палитру (и шрифты, если они следуют за палитрой); `Theme auto` — следовать теме системы; `Theme list` — список палитр; `Theme reload` — перечитать файл и перекрасить всё; `Theme` — текущие стили в синтаксисе файла; `Theme slots` — список слотов; `Theme file` — путь. В примере `config/theme` все строки закомментированы: это цвета `doom-light` для справки.
 
 ### `fmt` — форматирование при сохранении
 
@@ -100,7 +116,7 @@ put off                               # не форматировать при P
 
 - **Общие настройки** — таблица `settingDefs` в `editor/settings.go`.
 - **Клавиши** — таблицы в `editor/keys.go` (`defaultBindings`), `editor/keysmod.go` (клавиши с модификаторами) и `editor/prefix.go` (после Ctrl-B).
-- **Палитры** — шесть встроенных: `doom-light` (светлая, мягкая; **по умолчанию**) и `doom-dark` (тёмная, по мотивам doom-one) в `editor/theme/doom.go`; `acme` (жёлтая, как в оригинальном Acme), `vampira` (тёмная), `solarizedlight`, `solarizeddark` в `editor/theme/palette.go`. Отдельных файлов тем пока нет. Как подобраны цвета — `docs/10-theme-style-guide.md`.
+- **Палитры** — шесть встроенных: `doom-light` (светлая, мягкая; **по умолчанию**) и `doom-dark` (тёмная, по мотивам doom-one) в `editor/theme/doom.go`; `acme` (жёлтая, как в оригинальном Acme), `vampira` (тёмная), `solarizedlight`, `solarizeddark` в `editor/theme/palette.go`. Свои палитры — файлами в `~/.config/doomcode/themes/` (см. выше). Как подобраны цвета — `docs/10-theme-style-guide.md`.
 - **Цвета подсветки** для каждой палитры — рядом с палитрой (`doom.go`, `styles.go`).
 - **Форматирование** — одно правило: `.go gofmt`, в `editor/fmtfile.go`.
 
