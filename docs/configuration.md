@@ -35,7 +35,7 @@ C-k        -                      # снять привязку: клавиша 
 ### `theme` — цвета
 
 ```
-palette vampira                    # базовая палитра (если не задана флагом -palette)
+palette doom-dark                  # базовая палитра (если не задана флагом -palette)
 style keyword fg=#5f87af           # цвет стиля подсветки: fg=, bg=, line=, underline/nounderline
 style comment fg=#7f7f7f
 style variable -                   # убрать стиль: рисовать как обычный текст
@@ -61,7 +61,7 @@ put off                               # не форматировать при P
 Если файла нет или в нём нет нужной строки, действует значение из кода:
 
 - **Клавиши** — таблицы в `editor/keys.go` (`defaultBindings`), `editor/keysmod.go` (клавиши с модификаторами) и `editor/prefix.go` (после Ctrl-B).
-- **Палитры** — четыре встроенные, в `editor/theme/palette.go`: `acme` (светлая, жёлтая, как в оригинальном Acme; по умолчанию), `vampira` (тёмная), `solarizedlight`, `solarizeddark`. Отдельных файлов тем пока нет.
+- **Палитры** — шесть встроенных: `doom-light` (светлая, мягкая; **по умолчанию**) и `doom-dark` (тёмная, по мотивам doom-one) в `editor/theme/doom.go`; `acme` (жёлтая, как в оригинальном Acme), `vampira` (тёмная), `solarizedlight`, `solarizeddark` в `editor/theme/palette.go`. Отдельных файлов тем пока нет. Как подобраны цвета — `docs/10-theme-style-guide.md`.
 - **Цвета подсветки** для каждой палитры — в `editor/theme/styles.go`.
 - **Форматирование** — одно правило: `.go gofmt`, в `editor/fmtfile.go`.
 
@@ -73,7 +73,7 @@ put off                               # не форматировать при P
 |---|---|---|
 | `-f шрифт` | пропорциональный шрифт | Lucida Sans из plan9port (`run.sh` передаёт `$PLAN9/font/lucsans/euro.8.font`) |
 | `-F шрифт` | моноширинный шрифт | Lucida Typewriter (`$PLAN9/font/lucm/unicode.9.font`) |
-| `-palette имя` | палитра | `acme`; перекрывает строку `palette` в файле `theme` |
+| `-palette имя` | палитра: `doom-light`, `doom-dark`, `acme`, `vampira`, `solarizedlight`, `solarizeddark` | `doom-light`; перекрывает строку `palette` в файле `theme` |
 | `-W 1600x1000@X,Y` | размер и положение окна | `1024x768` |
 | `-c N` | число колонок при запуске | 2 |
 | `-a` | автоотступ во всех окнах | выключен |

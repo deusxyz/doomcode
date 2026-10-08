@@ -1,3 +1,6 @@
 # local builds
 /bin/
 .DS_Store
+
+# Screenshots for comparing fonts and palettes; not kept in history
+/docs/images/compare/
