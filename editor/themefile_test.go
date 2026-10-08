@@ -101,18 +101,18 @@ func TestReloadThemeStyles(t *testing.T) {
 }
 
 func TestThemeFilePath(t *testing.T) {
-	t.Setenv("EDWOOD_THEME", "/x/theme")
+	t.Setenv("DOOMCODE_THEME", "/x/theme")
 	t.Setenv("XDG_CONFIG_HOME", "/xdg")
 	t.Setenv("HOME", "/home")
 	if got := themeFilePath(); got != "/x/theme" {
-		t.Errorf("EDWOOD_THEME: %q", got)
+		t.Errorf("DOOMCODE_THEME: %q", got)
 	}
-	t.Setenv("EDWOOD_THEME", "")
-	if got := themeFilePath(); got != filepath.Join("/xdg", "edwood", "theme") {
+	t.Setenv("DOOMCODE_THEME", "")
+	if got := themeFilePath(); got != filepath.Join("/xdg", "doomcode", "theme") {
 		t.Errorf("XDG: %q", got)
 	}
 	t.Setenv("XDG_CONFIG_HOME", "")
-	if got := themeFilePath(); got != filepath.Join("/home", ".config", "edwood", "theme") {
+	if got := themeFilePath(); got != filepath.Join("/home", ".config", "doomcode", "theme") {
 		t.Errorf("HOME: %q", got)
 	}
 }

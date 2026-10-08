@@ -206,7 +206,7 @@ func main() {
 	// different display for testing.
 	// Create the display within the closure to ensure proper scope
 	draw.Main(func(dd *draw.Device) {
-		display, err := dd.NewDisplay(nil, *varfontflag, "edwood", *winsize)
+		display, err := dd.NewDisplay(nil, *varfontflag, "doomcode", *winsize)
 		if err != nil {
 			log.Fatalf("can't open display: %v\n", err)
 		}

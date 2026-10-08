@@ -99,18 +99,18 @@ func TestLoadKeysFile(t *testing.T) {
 }
 
 func TestKeysFilePath(t *testing.T) {
-	t.Setenv("EDWOOD_KEYS", "/tmp/x/keys")
+	t.Setenv("DOOMCODE_KEYS", "/tmp/x/keys")
 	t.Setenv("XDG_CONFIG_HOME", "/tmp/xdg")
 	t.Setenv("HOME", "/tmp/home")
 	if got := keysFilePath(); got != "/tmp/x/keys" {
-		t.Errorf("EDWOOD_KEYS: got %q", got)
+		t.Errorf("DOOMCODE_KEYS: got %q", got)
 	}
-	t.Setenv("EDWOOD_KEYS", "")
-	if got, want := keysFilePath(), filepath.Join("/tmp/xdg", "edwood", "keys"); got != want {
+	t.Setenv("DOOMCODE_KEYS", "")
+	if got, want := keysFilePath(), filepath.Join("/tmp/xdg", "doomcode", "keys"); got != want {
 		t.Errorf("XDG_CONFIG_HOME: got %q; want %q", got, want)
 	}
 	t.Setenv("XDG_CONFIG_HOME", "")
-	if got, want := keysFilePath(), filepath.Join("/tmp/home", ".config", "edwood", "keys"); got != want {
+	if got, want := keysFilePath(), filepath.Join("/tmp/home", ".config", "doomcode", "keys"); got != want {
 		t.Errorf("HOME: got %q; want %q", got, want)
 	}
 }

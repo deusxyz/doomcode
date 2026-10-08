@@ -2,7 +2,7 @@
 # Freshen this.
 
 on: [push, pull_request]
-name: edwood
+name: doomcode
 
 jobs:
   test:
@@ -12,6 +12,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: editor
     env:
       GO111MODULE: on
       acmeshell: sh
@@ -47,6 +50,12 @@ jobs:
 
     - name: Run Go tests
       run: go test -v -race -coverprofile coverage.txt -covermode atomic ./...
+
+    # Syn and Diag: tree-sitter grammars need cgo, so not on Windows.
+    - name: Test Syn, Diag and acmefs
+      if: matrix.os != 'windows-latest'
+      run: go test ./cmd/... ./internal/...
+      working-directory: .
 
     - name: Build with duitdraw on non-windows systems
       if: matrix.os != 'windows-latest'

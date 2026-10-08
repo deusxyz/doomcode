@@ -283,7 +283,7 @@ func TestDefaultDumpFile(t *testing.T) {
 		t.Fatalf("defaultDumpFile failed: %v", err)
 	}
 	got = filepath.ToSlash(got)
-	want := "/home/gopher/edwood.dump"
+	want := "/home/gopher/doomcode.dump"
 	if got != want {
 		t.Errorf("default dump file is %q; want %q", got, want)
 	}

@@ -24,6 +24,8 @@ _testmain.go
 *.test
 *.prof
 /edwood
+/editor
+/doomcode
 /E
 /sendit
 /win

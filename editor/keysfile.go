@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 )
 
 // The keys file lets the user change key bindings without rebuilding.
 //
-// Location: $EDWOOD_KEYS if set, otherwise $XDG_CONFIG_HOME/edwood/keys,
-// otherwise $HOME/.config/edwood/keys. A missing file means the built-in
+// Location: $DOOMCODE_KEYS if set, otherwise $XDG_CONFIG_HOME/doomcode/keys,
+// otherwise $HOME/.config/doomcode/keys. A missing file means the built-in
 // bindings (defaultBindings in keys.go) are used unchanged.
 //
 // Format: one binding per line, "key action", where key is spelled as
@@ -30,19 +29,7 @@ import (
 // documents the actions.
 
 // keysFilePath returns the path of the keys file, see above.
-func keysFilePath() string {
-	if p := os.Getenv("EDWOOD_KEYS"); p != "" {
-		return p
-	}
-	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
-		return filepath.Join(dir, "edwood", "keys")
-	}
-	home := os.Getenv("HOME")
-	if home == "" {
-		home, _ = os.UserHomeDir()
-	}
-	return filepath.Join(home, ".config", "edwood", "keys")
-}
+func keysFilePath() string { return configFilePath("keys") }
 
 // loadKeysText applies the bindings read from r to km (direct keys) and
 // pkm (keys after the Ctrl-B prefix). Lines that cannot be applied are

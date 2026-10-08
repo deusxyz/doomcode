@@ -693,5 +693,5 @@ func defaultDumpFile() (string, error) {
 		return "", fmt.Errorf("can't find home directory")
 	}
 	// Lower risk of simultaneous use of edwood and acme.
-	return filepath.Join(global.home, "edwood.dump"), nil
+	return filepath.Join(global.home, "doomcode.dump"), nil
 }

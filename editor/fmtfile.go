@@ -14,8 +14,8 @@ import (
 // formatted text on standard output. Put runs the filter first when a
 // rule matches; the Fmt command runs it on demand.
 //
-// Location: $EDWOOD_FMT if set, otherwise $XDG_CONFIG_HOME/edwood/fmt,
-// otherwise $HOME/.config/edwood/fmt. The file is applied on top of the
+// Location: $DOOMCODE_FMT if set, otherwise $XDG_CONFIG_HOME/doomcode/fmt,
+// otherwise $HOME/.config/doomcode/fmt. The file is applied on top of the
 // defaults (defaultFmtRules), so it only needs to list changes:
 //
 //	.go gofmt -s           # suffix, then the command and its arguments
@@ -101,19 +101,7 @@ func (t *fmtTable) doc() string {
 	return sb.String()
 }
 
-func fmtFilePath() string {
-	if p := os.Getenv("EDWOOD_FMT"); p != "" {
-		return p
-	}
-	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
-		return filepath.Join(dir, "edwood", "fmt")
-	}
-	home := os.Getenv("HOME")
-	if home == "" {
-		home, _ = os.UserHomeDir()
-	}
-	return filepath.Join(home, ".config", "edwood", "fmt")
-}
+func fmtFilePath() string { return configFilePath("fmt") }
 
 // loadFmtText applies the lines read from r to t. Bad lines are reported
 // in errs and skipped. n is the number of lines applied.

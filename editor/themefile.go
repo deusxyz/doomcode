@@ -3,14 +3,13 @@ package main
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/deusxyz/doomcode/editor/theme"
 )
 
-// The theme file: $EDWOOD_THEME, else $XDG_CONFIG_HOME/edwood/theme, else
-// $HOME/.config/edwood/theme. Its format is described in theme/themefile.go.
+// The theme file: $DOOMCODE_THEME, else $XDG_CONFIG_HOME/doomcode/theme, else
+// $HOME/.config/doomcode/theme. Its format is described in theme/themefile.go.
 //
 // At startup the file's palette slots and styles are applied to the
 // chosen palette before any window exists. "Theme reload" re-reads the
@@ -20,19 +19,7 @@ import (
 //
 // See docs/05-style-spec.md section 4 in the justcode project.
 
-func themeFilePath() string {
-	if p := os.Getenv("EDWOOD_THEME"); p != "" {
-		return p
-	}
-	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
-		return filepath.Join(dir, "edwood", "theme")
-	}
-	home := os.Getenv("HOME")
-	if home == "" {
-		home, _ = os.UserHomeDir()
-	}
-	return filepath.Join(home, ".config", "edwood", "theme")
-}
+func themeFilePath() string { return configFilePath("theme") }
 
 // readThemeFile parses the theme file at path. A missing file gives an
 // empty theme and no error.
