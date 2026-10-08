@@ -32,6 +32,7 @@ go test ./...                                  # все тесты модуля 
 - Тестам редактора нужен `rc` в PATH (`$PLAN9/bin`) или `acmeshell=sh`, иначе `TestRunproc`/`TestMntDecRef` падают — это окружение, не flaky. В PATH пользователя `$PLAN9/bin` раньше `/usr/bin`: для скриптов ставить `PATH=/usr/bin:/bin:$PATH`.
 - Клиентам (`9p`, `Syn`, `win`, `acme-lsp`) нужен тот же `NAMESPACE`. Из тега редактора всё наследуется само.
 - 9fans.net/go закреплён на v0.0.2: под неё написана обёртка draw редактора (в v0.0.7 переименованы константы).
+- Скриншот для README: `docs/images/screenshot/shoot.sh [палитра] [размер]` клонирует репозиторий в `/tmp/doomcode` (короткий путь в тегах, без домашнего каталога), загружает раскладку из `layout.py` (три колонки: файлы и `docs/`, баннер из `banner.py` и README, два Go-файла) в отдельном пространстве имён с `Syn`, снимает окно в `docs/images/screenshot.png`. Переснимать, когда меняется вид редактора или README.
 - Проверка GUI без пользователя: скриншот окна devdraw. `winlist` (Swift, в scratchpad; при необходимости пересобрать из `CGWindowListCopyWindowInfo`) даёт window id, затем `screencapture -x -o -l<id> out.png`. Нажатия клавиш за пользователя сделать нельзя; текст и команды — через `9p write acme/N/{addr,data,ctl,style}`.
 - `go vet` ругается на `editor/file/buffer_adapter.go:53 unreachable`, staticcheck — на `editor/xfid.go` SA4006: старые баги Edwood, теперь их можно чинить (отдельным коммитом).
 
