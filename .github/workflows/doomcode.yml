@@ -54,7 +54,9 @@ jobs:
       run: |
         go test -v -race -coverprofile coverage.txt -covermode atomic ./... 2>&1 | tee test.log
         status=${PIPESTATUS[0]}
-        grep -E '^(--- FAIL|FAIL|panic:)|_test\.go:[0-9]+:' test.log | head -60 | sed 's/^/::error::/' || true
+        if [ "$status" != 0 ]; then
+          { grep -E '^(--- FAIL|FAIL|panic:)|_test\.go:[0-9]+:|\.go:[0-9]+:[0-9]+:' test.log | head -60; tail -25 test.log; } | tr -d '\r' | sed 's/^/::error::/' || true
+        fi
         exit $status
       shell: bash
 
