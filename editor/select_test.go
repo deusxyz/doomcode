@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"runtime"
 	"testing"
 
 	"github.com/deusxyz/doomcode/editor/draw"
@@ -268,6 +269,11 @@ func TestPointerLeavingFocusedTextKeepsTypingRun(t *testing.T) {
 }
 
 func TestLookJumpMovesFocusToBody(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// expandfile_win.go takes the whole space-delimited span of the
+		// tag as a file name, so ":2" at its end is not a bare address.
+		t.Skip("Windows expands addresses in the tag differently")
+	}
 	text := makeKeyTestBody("one\ntwo\nthree\n", 0, 0)
 	defer func() { global.barttext = nil; global.focusSticky = false; global.seltext = nil }()
 	tag := &text.w.tag
