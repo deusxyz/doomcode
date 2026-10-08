@@ -1,9 +1,10 @@
 # Highlight queries
 
 `*.scm` are tree-sitter highlight queries, one per grammar. They are the
-grammars' own `queries/highlights.scm` files (MIT licensed by their
-respective authors: the tree-sitter authors for go, c, json, bash, rust,
-python, javascript, typescript; nvim-treesitter for markdown), with small
+grammars' own `queries/highlights.scm` files, MIT licensed with the
+grammars: the tree-sitter authors for go, c, json, bash, rust, python,
+javascript and typescript; tree-sitter-grammars for markdown and
+markdown-inline (whose files note they come from nvim-treesitter). Small
 changes:
 
 - `go.scm`: `package` identifier and `import` declarations captured as
