@@ -112,7 +112,7 @@ tabexpand     off
 
 1. ~~Справка `docs/configuration.md` и каталог примеров `config/` с тестом «пример = умолчания»~~ (готово 2026-10-09).
 2. ~~Файл `config`, порядок значений §3, шрифты; команды `Config`, `Config init/reset/reload/defaults`, клавиши `Cmd-,` и `Ctrl-B ,`~~ (готово 2026-10-09: `editor/settings.go`, `editor/configcmd.go`, `config/`; пустой каталог при `Config` подсказывает `Config init`; шрифт, который не открылся, откатывается на Lucida).
-3. Смена палитры на ходу; `Theme <имя>`; `Theme reload` для слотов.
+3. ~~Смена палитры на ходу; `Theme <имя>`; `Theme reload` для слотов~~ (готово 2026-10-09: `editor/palettelive.go`; шрифты переключаются вместе с палитрой, если их не задали флаг или `config`; `Theme list`).
 4. ~~Палитры `doom-light`/`doom-dark` с тестом контраста~~ (готово 2026-10-08); темы файлами.
 5. `palette auto` с опросом системы.
 

@@ -15,7 +15,7 @@
 |---|---|---|---|
 | `config` | общие настройки: палитра, шрифты, окно, отступы | `Config reload` (палитра, шрифты, окно, колонки — после перезапуска) | `DOOMCODE_CONFIG` |
 | `keys` | привязки клавиш | `Keys reload` | `DOOMCODE_KEYS` |
-| `theme` | цвета подсветки и окон поверх палитры | `Theme reload` (цвета подсветки; цвета окон — после перезапуска) | `DOOMCODE_THEME` |
+| `theme` | цвета подсветки и окон поверх палитры | `Theme reload` | `DOOMCODE_THEME` |
 | `fmt` | форматирование при сохранении | `Fmt reload` | `DOOMCODE_FMT` |
 
 `Config reload` перечитывает все четыре файла сразу. Во всех файлах пустые строки пропускаются, `#` начинает комментарий до конца строки (в `theme` — если за `#` не следует цвет). Строки с ошибками пропускаются, сообщение о них приходит в `+Errors`, остальные строки применяются.
@@ -77,11 +77,11 @@ C-k        -                      # снять привязку: клавиша 
 style keyword fg=#5f87af           # цвет стиля подсветки: fg=, bg=, line=, underline/nounderline
 style comment fg=#7f7f7f
 style variable -                   # убрать стиль: рисовать как обычный текст
-text.back #fdf6e3                  # цвет окна (слот палитры), применяется после перезапуска
+text.back #fdf6e3                  # цвет окна (слот палитры)
 tag.back #eee8d5
 ```
 
-Файл накладывается на выбранную палитру. Палитру лучше выбирать в `config`; строка `palette ИМЯ` в `theme` тоже работает, но `config` и `-palette` её перекрывают. Цвета: `#rgb`, `#rrggbb`, `#rrggbbaa`. Слоты палитры: `tag.*` и `text.*` (`back high bord text htext tick`), `ui.modbutton ui.colbutton ui.but2 ui.but3`; после цвета можно указать `mix #ffffff` — смесь 50/50. Имена стилей подсветки: `comment keyword string number type function constant preproc heading emphasis link variable operator punctuation error warning info hint match diff.add diff.del diff.change`; имя с точкой (`error.syntax`) без своего цвета берёт цвет имени до точки. Команды: `Theme` — текущие стили в синтаксисе файла; `Theme slots` — список слотов; `Theme file` — путь. В примере `config/theme` все строки закомментированы: это цвета `doom-light` для справки.
+Файл накладывается на выбранную палитру. Палитру лучше выбирать в `config`; строка `palette ИМЯ` в `theme` тоже работает, но `config` и `-palette` её перекрывают. Цвета: `#rgb`, `#rrggbb`, `#rrggbbaa`. Слоты палитры: `tag.*` и `text.*` (`back high bord text htext tick`), `ui.modbutton ui.colbutton ui.but2 ui.but3`; после цвета можно указать `mix #ffffff` — смесь 50/50. Имена стилей подсветки: `comment keyword string number type function constant preproc heading emphasis link variable operator punctuation error warning info hint match diff.add diff.del diff.change`; имя с точкой (`error.syntax`) без своего цвета берёт цвет имени до точки. Команды: **`Theme ИМЯ`** — сразу переключить палитру (и шрифты, если они следуют за палитрой); `Theme list` — список палитр; `Theme reload` — перечитать файл и перекрасить всё; `Theme` — текущие стили в синтаксисе файла; `Theme slots` — список слотов; `Theme file` — путь. В примере `config/theme` все строки закомментированы: это цвета `doom-light` для справки.
 
 ### `fmt` — форматирование при сохранении
 

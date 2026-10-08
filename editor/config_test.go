@@ -102,6 +102,8 @@ func TestParseSettings(t *testing.T) {
 func TestApplySettingsPrecedence(t *testing.T) {
 	saved := []string{*paletteName, *varfontflag, *fixedfontflag, *winsize}
 	savedCol, savedBar, savedAI, savedSet := *ncol, *barflag, *globalAutoIndent, configPaletteSet
+	savedFollow := paletteFonts
+	defer func() { paletteFonts = savedFollow }()
 	defer func() {
 		*paletteName, *varfontflag, *fixedfontflag, *winsize = saved[0], saved[1], saved[2], saved[3]
 		*ncol, *barflag, *globalAutoIndent, configPaletteSet = savedCol, savedBar, savedAI, savedSet

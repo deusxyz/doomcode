@@ -207,6 +207,10 @@ func startupPaletteName(flagSet func(string) bool) string {
 // the config file chose one. They are macOS system fonts, so other
 // systems keep the built-in default.
 func applyPaletteFonts(name string, vals map[string]string, flagSet func(string) bool, goos string) {
+	_, varInConfig := vals["font"]
+	_, fixedInConfig := vals["font.fixed"]
+	paletteFonts.varFont = goos == "darwin" && !flagSet("f") && !varInConfig
+	paletteFonts.fixedFont = goos == "darwin" && !flagSet("F") && !fixedInConfig
 	p, ok := theme.PaletteByName(name)
 	if !ok || goos != "darwin" {
 		return

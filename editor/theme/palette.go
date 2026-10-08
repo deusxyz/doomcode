@@ -127,6 +127,17 @@ func init() {
 	}
 }
 
+// PaletteNames returns the built-in palette names, doomcode's own first.
+func PaletteNames() []string {
+	names := []string{"doom-light", "doom-dark"}
+	for _, n := range []string{"acme", "vampira", "solarizedlight", "solarizeddark"} {
+		if _, ok := palettes[n]; ok {
+			names = append(names, n)
+		}
+	}
+	return names
+}
+
 // PaletteByName returns the named palette and true, or the zero Palette
 // and false if the name is not registered.
 func PaletteByName(name string) (Palette, bool) {

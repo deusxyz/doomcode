@@ -101,7 +101,9 @@ func paletteFlagSet() bool {
 // themeCmd implements the Theme command:
 //
 //	Theme          list the styles in effect and the theme file path
-//	Theme reload   re-read the theme file (styles only)
+//	Theme NAME     switch to palette NAME now (fonts too, where they follow the palette)
+//	Theme list     list the palettes
+//	Theme reload   re-read the theme file and repaint
 //	Theme file     print the theme file path
 //	Theme slots    list the palette slots the file may set
 func themeCmd(_ *Text, _ *Text, argt *Text, _, _ bool, arg string) {
@@ -126,16 +128,27 @@ func themeCommandImpl(argt *Text, arg string) {
 	case "":
 		warning(nil, "Theme: styles (file %s):\n%s", path, global.palette.StylesDoc())
 	case "reload":
-		n, errs := reloadThemeStyles(path)
+		tf, errs := readThemeFile(path)
 		for _, err := range errs {
 			warning(nil, "Theme: %s: %v\n", path, err)
 		}
-		warning(nil, "Theme: %s: %d style line(s) applied; palette slots need a restart\n", path, n)
+		if global.row.display == nil { // no screen (tests): styles only
+			reloadThemeStyles(path)
+		} else {
+			global.switchPalette(*paletteName)
+		}
+		warning(nil, "Theme: %s: %d style line(s) and %d colour slot(s) applied to %s\n", path, len(tf.Styles), len(tf.Slots), *paletteName)
 	case "file":
 		warning(nil, "%s\n", path)
 	case "slots":
 		warning(nil, "Theme: palette slots: %s\n", strings.Join(theme.SlotNames(), " "))
+	case "list":
+		warning(nil, "Theme: palettes: %s (in use: %s)\n", strings.Join(theme.PaletteNames(), " "), *paletteName)
 	default:
-		warning(nil, "Theme: unknown argument %q; use reload, file or slots\n", arg)
+		if _, ok := theme.PaletteByName(arg); ok && global.row.display != nil {
+			global.switchPalette(arg)
+			return
+		}
+		warning(nil, "Theme: unknown argument %q; use a palette name (Theme list), reload, file or slots\n", arg)
 	}
 }
