@@ -74,6 +74,11 @@ type Palette struct {
 	Text   FramePalette
 	Ui     UiPalette
 	Styles Styles // named text styles painted over Text, see styles.go
+
+	// Fonts the palette is designed with, as font names devdraw opens
+	// (macOS system fonts through /mnt/font); "" leaves the built-in
+	// default. A font from the config file or a flag overrides them.
+	VarFont, FixedFont string
 }
 
 // tagImg returns the image for the given slot from the Tag palette.

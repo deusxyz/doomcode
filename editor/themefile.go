@@ -85,9 +85,11 @@ func reloadThemeStyles(path string) (int, []error) {
 	return len(tf.Styles), errs
 }
 
-// paletteFlagSet reports whether -palette was given on the command line.
+// paletteFlagSet reports whether -palette was given on the command line
+// or the config file chose the palette: either wins over the theme
+// file's palette line.
 func paletteFlagSet() bool {
-	set := false
+	set := configPaletteSet
 	visitFlags(func(name string) {
 		if name == "palette" {
 			set = true

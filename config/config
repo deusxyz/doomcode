@@ -1,0 +1,24 @@
+# doomcode settings: ~/.config/doomcode/config
+#
+# Every line below is the built-in default, so this file changes nothing
+# until you edit it. Lines starting with # are comments. A flag given on
+# the command line (-palette, -f, -F, -W, -c, -a, -b) wins over this file.
+# After a change: Config reload, or restart for fonts, palette and window.
+#
+# name       value         what it is
+
+palette      doom-light    # doom-light, doom-dark, acme, vampira, solarizedlight, solarizeddark
+
+# Fonts: by default the palette's own fonts on macOS (doom-light: Avenir 14
+# and Menlo 13; doom-dark: Helvetica Neue 14 and Menlo 13), Lucida from
+# plan9port elsewhere. System fonts are /mnt/font/<Name>/<size>a/font;
+# list them with "fontsrv -p .".
+# font       /mnt/font/Avenir-Book/14a/font
+# font.fixed /mnt/font/Menlo-Regular/13a/font
+
+window       1024x768      # WidthxHeight, optionally @X,Y
+columns      2             # columns at startup
+autoindent   off           # on: keep the previous line's indentation
+focus        click         # click: type into the last clicked window; mouse: under the mouse
+tabstop      4             # tab width in characters
+tabexpand    off           # on: Tab types spaces

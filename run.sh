@@ -12,4 +12,6 @@ export PATH=$PWD/bin:$HOME/go/bin:$PATH:$PLAN9/bin # bin/ first: Syn is run from
 export NAMESPACE=${NAMESPACE:-/tmp/ns.doomcode}
 export DEVDRAW=${DEVDRAW:-$PLAN9/bin/devdraw}
 mkdir -p "$NAMESPACE"
-exec ./bin/doomcode -f "$PLAN9/font/lucsans/euro.8.font" -F "$PLAN9/font/lucm/unicode.9.font" "$@"
+# Fonts come from the config file or the palette (see docs/configuration.md);
+# pass -f and -F here to force them.
+exec ./bin/doomcode "$@"

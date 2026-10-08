@@ -49,6 +49,9 @@ func predrawInit() *dumpfile.Content {
 
 	startProfiler()
 
+	// Settings from the config file, below flags and above defaults.
+	startupSettings()
+
 	// Implicit to preserve existing semantics.
 	// TODO(rjk): Do this here.
 	// global = makeglobals()
@@ -207,6 +210,16 @@ func main() {
 	// Create the display within the closure to ensure proper scope
 	draw.Main(func(dd *draw.Device) {
 		display, err := dd.NewDisplay(nil, *varfontflag, "doomcode", *winsize)
+		if err != nil && *varfontflag != defaultVarFont {
+			// A font from the config or the palette that this system
+			// lacks must not keep the editor from starting.
+			log.Printf("font %s: %v; using %s", *varfontflag, err, defaultVarFont)
+			*varfontflag = defaultVarFont
+			*fixedfontflag = defaultFixedFont
+			global.tagfont = *varfontflag
+			os.Setenv("font", *varfontflag)
+			display, err = dd.NewDisplay(nil, *varfontflag, "doomcode", *winsize)
+		}
 		if err != nil {
 			log.Fatalf("can't open display: %v\n", err)
 		}

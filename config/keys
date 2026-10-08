@@ -1,0 +1,141 @@
+# doomcode key bindings: ~/.config/doomcode/keys
+#
+# Every line below is a built-in default, so this file changes nothing
+# until you edit it. Each line is "key action"; "prefix key action" binds
+# the key after Ctrl-B; "key -" removes a binding; "key run command" runs
+# a command like button 2; "key tag text" types text into the tag.
+# Keys: C-x (Ctrl), Cmd-x, M-x (Alt/Option), S- (Shift) with special keys
+# such as C-S-Left; Left Right Up Down Home End PgUp PgDn Ins Del
+# Backspace Tab Enter Esc Space F1-F12; C-/ is Ctrl+/.
+# "Keys actions" lists every action; after a change: Keys reload.
+#
+# You only need the lines you change; delete the rest if you like.
+
+0xF800       cursor-down
+C-/          comment-toggle
+C-Backspace  delete-word-back
+C-Del        delete-word-forward
+C-Down       scroll-down
+C-End        file-end
+C-Enter      execute
+C-Home       file-start
+C-Left       word-left
+C-Right      word-right
+C-S-Left     select-word-left
+C-S-Right    select-word-right
+C-Up         scroll-up
+C-a          select-all
+C-c          snarf
+C-d          select-word
+C-e          execute
+C-f          find
+C-g          goto
+C-k          kill-line
+C-l          select-line
+C-n          new
+C-o          look
+C-s          put
+C-v          paste
+C-x          cut
+C-y          redo
+C-z          undo
+Cmd-,        config
+Cmd-/        comment-toggle
+Cmd-Down     file-end
+Cmd-Enter    execute
+Cmd-Left     line-start
+Cmd-Right    line-end
+Cmd-Up       file-start
+Cmd-Z        redo
+Cmd-a        select-all
+Cmd-c        snarf
+Cmd-d        select-word
+Cmd-e        execute
+Cmd-g        goto
+Cmd-l        select-line
+Cmd-n        new
+Cmd-o        look
+Cmd-s        put
+Cmd-v        paste
+Cmd-x        cut
+Cmd-z        undo
+Down         cursor-down
+End          line-end
+F12          run L def
+F2           tag L rn
+F3           find-next
+Home         line-start
+Left         cursor-left
+M-Down       scroll-down
+M-Enter      look
+M-Esc        run L comp -e
+M-Left       word-left
+M-Right      word-right
+M-Up         scroll-up
+PgDn         page-down
+PgUp         page-up
+Right        cursor-right
+S-Cmd-Left   select-line-start
+S-Cmd-Right  select-line-end
+S-Down       select-down
+S-End        select-line-end
+S-Home       select-line-start
+S-Left       select-left
+S-M-Left     select-word-left
+S-M-Right    select-word-right
+S-PgDn       select-page-down
+S-PgUp       select-page-up
+S-Right      select-right
+S-Tab        outdent
+S-Up         select-up
+Up           cursor-up
+prefix %            newcol
+prefix &            delcol
+prefix +            grow
+prefix ,            config
+prefix -            shrink
+prefix /            comment-toggle
+prefix 0            focus-0
+prefix 1            focus-1
+prefix 2            focus-2
+prefix 3            focus-3
+prefix 4            focus-4
+prefix 5            focus-5
+prefix 6            focus-6
+prefix 7            focus-7
+prefix 8            focus-8
+prefix 9            focus-9
+prefix :            command-line
+prefix ;            focus-prev
+prefix Down         focus-down
+prefix Enter        execute
+prefix G            file-end
+prefix Left         focus-left
+prefix R            tag L rn
+prefix Right        focus-right
+prefix S            putall
+prefix Space        anchor
+prefix Tab          outdent
+prefix Up           focus-up
+prefix Z            maximize
+prefix [            move-left
+prefix ]            move-right
+prefix b            select-block
+prefix c            new
+prefix d            run L def
+prefix g            file-start
+prefix h            run L hov
+prefix i            run L impls
+prefix k            run L sig
+prefix l            look
+prefix n            find-next
+prefix o            focus-next
+prefix q            show-numbers
+prefix r            run L refs
+prefix s            sort
+prefix t            tag-toggle
+prefix w            window-list
+prefix x            del
+prefix z            zoom
+prefix {            move-up
+prefix }            move-down

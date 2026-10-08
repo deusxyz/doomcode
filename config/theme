@@ -1,0 +1,37 @@
+# doomcode colours: ~/.config/doomcode/theme
+#
+# Everything below is commented out: these are doom-light's built-in
+# colours, for reference. Uncomment a line and change it to override that
+# colour in whatever palette is in use (choose the palette in the config
+# file).
+#   palette NAME                       base palette (the config file's palette wins)
+#   style NAME fg=#rrggbb bg=#rrggbb line=#rrggbb underline|nounderline
+#   style NAME -                       draw NAME as plain text
+#   text.back #rrggbb [mix #rrggbb]    window colours (slots: tag.* text.* with
+#                                      back high bord text htext tick;
+#                                      ui.modbutton ui.colbutton ui.but2 ui.but3)
+# Colours are #rgb, #rrggbb or #rrggbbaa. "Theme" prints the styles in
+# effect; after a change: Theme reload (window colours: restart).
+# How the doomcode palettes are chosen: docs/10-theme-style-guide.md.
+
+# palette doom-light
+
+# style comment      fg=#646f61
+# style constant     fg=#86497f
+# style diff.add     bg=#dff0d8
+# style diff.change  bg=#f4ebc8
+# style diff.del     bg=#f6dcd8
+# style emphasis     fg=#5c4a86
+# style error        bg=#f6dcd8 underline line=#b5524a
+# style function     fg=#3f5c94
+# style heading      fg=#35539a
+# style hint         bg=#e0edda underline line=#4e8a4e
+# style info         bg=#dce7f3 underline line=#3f6aa8
+# style keyword      fg=#35539a
+# style link         fg=#3468b0 underline
+# style match        bg=#f0de9a
+# style number       fg=#7a4c98
+# style preproc      fg=#7d6420
+# style string       fg=#94552b
+# style type         fg=#2e716f
+# style warning      bg=#f4ebc8 underline line=#a07a20

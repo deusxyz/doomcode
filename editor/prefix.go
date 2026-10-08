@@ -123,6 +123,8 @@ var defaultPrefixBindings = []struct{ key, action string }{
 	{"q", "show-numbers"},
 	{"-", "shrink"},
 
+	{",", "config"},
+
 	// acme-lsp's L (keyrun.go).
 	{"d", "run L def"},
 	{"r", "run L refs"},

@@ -1,0 +1,16 @@
+# doomcode formatting on Put: ~/.config/doomcode/fmt
+#
+# The uncommented lines are the built-in defaults. Each rule is a file
+# suffix (with the dot) or an exact file name, then a command that reads
+# the text on stdin and prints it formatted; %f is the file's path.
+# "name -" removes a rule; "put off" stops formatting on Put (Fmt still
+# works). "Fmt rules" shows the rules; after a change: Fmt reload.
+
+.go      gofmt
+put      on
+
+# More formatters, if you have them installed:
+# .rs    rustfmt --emit stdout
+# .py    black -q -
+# .ts    prettier --stdin-filepath %f
+# .json  jq .

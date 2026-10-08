@@ -35,7 +35,9 @@ var DoomLight = Palette{
 		But2:      solid(0xB5524AFF),
 		But3:      solid(0x4E8A4EFF),
 	},
-	Styles: doomLightStyles,
+	Styles:    doomLightStyles,
+	VarFont:   "/mnt/font/Avenir-Book/14a/font",
+	FixedFont: "/mnt/font/Menlo-Regular/13a/font",
 }
 
 var doomLightStyles = Styles{
@@ -102,7 +104,9 @@ var DoomDark = Palette{
 		But2:      solid(doomRed),
 		But3:      solid(doomGreen),
 	},
-	Styles: doomDarkStyles,
+	Styles:    doomDarkStyles,
+	VarFont:   "/mnt/font/HelveticaNeue/14a/font",
+	FixedFont: "/mnt/font/Menlo-Regular/13a/font",
 }
 
 var doomDarkStyles = Styles{

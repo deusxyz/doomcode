@@ -55,6 +55,7 @@ type Exectab struct {
 
 var globalexectab = []Exectab{
 	//	{ "Abort",		doabort,	false,	true /*unused*/,		true /*unused*/,		},
+	{"Config", configCmd, false, true /*unused*/, true /*unused*/},
 	{"Cut", cut, true, true, true},
 	{"Del", del, false, false, true /*unused*/},
 	{"Delcol", delcol, false, true /*unused*/, true /*unused*/},

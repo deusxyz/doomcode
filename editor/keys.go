@@ -225,6 +225,7 @@ var defaultBindings = []struct{ key, action string }{
 	{"Cmd-Z", "redo"},
 	{"C-k", "kill-line"},
 
+	{"Cmd-,", "config"},       // macOS settings key; also Ctrl-B ,
 	{"C-/", "comment-toggle"}, // the usual editor key; also Ctrl-B /
 	{"Cmd-/", "comment-toggle"},
 	{"C-l", "select-line"},
@@ -307,6 +308,7 @@ func buildActionTable() map[string]*Action {
 		{Name: "execute", Doc: "run the selection or the word under the cursor, like button 2", Fn: (*Text).keyExecute},
 		{Name: "look", Doc: "open or search for the selection or the word under the cursor, like button 3", Fn: (*Text).keyLook},
 		{Name: "put", Doc: "write the window to its file (Put)", Fn: (*Text).keyPut},
+		{Name: "config", Doc: "open the configuration directory ~/.config/doomcode (Config)", Row: true, Fn: func(t *Text) { configCommand(t, nil, "") }},
 	} {
 		if _, dup := table[a.Name]; dup {
 			panic("duplicate action " + a.Name)
