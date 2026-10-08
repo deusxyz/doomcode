@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/rjkroege/edwood/regexp"
+	"github.com/deusxyz/doomcode/editor/regexp"
 )
 
 // PAL: If our q1==q0 selection is within ' chars, we check if it's a filename, otherwise fall

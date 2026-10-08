@@ -4,7 +4,7 @@ import (
 	"image"
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 func wantSel(t *testing.T, what string, text *Text, q0, q1 int) {

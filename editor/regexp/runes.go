@@ -7,7 +7,7 @@ package regexp
 import (
 	"regexp/syntax"
 
-	"github.com/rjkroege/edwood/runes"
+	"github.com/deusxyz/doomcode/editor/runes"
 )
 
 // CompileAcme is like Compile but treats ^ and $ as only matching

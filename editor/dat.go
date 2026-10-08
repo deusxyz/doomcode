@@ -7,9 +7,9 @@ import (
 
 	"9fans.net/go/plan9"
 	//"9fans.net/go/plumb"
-	//	"github.com/rjkroege/edwood/draw"
-	//	"github.com/rjkroege/edwood/file"
-	//	"github.com/rjkroege/edwood/frame"
+	//	"github.com/deusxyz/doomcode/editor/draw"
+	//	"github.com/deusxyz/doomcode/editor/file"
+	//	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 // These constants are used to identify a file in the file server.

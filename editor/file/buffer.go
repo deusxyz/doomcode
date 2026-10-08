@@ -93,7 +93,7 @@ import (
 	"log"
 	"unicode/utf8"
 
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 var _ io.ReaderAt = (*Buffer)(nil)

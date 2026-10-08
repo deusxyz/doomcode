@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/edwoodtest"
 )
 
 var rebase = flag.Bool("rebase", false, "overwrite SVG baselines with the current trial output")

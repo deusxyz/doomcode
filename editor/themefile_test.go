@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 func writeTheme(t *testing.T, content string) string {

@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/rjkroege/edwood/frame"
+	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 // recordingFrame is a MockFrame that remembers style calls and reports a

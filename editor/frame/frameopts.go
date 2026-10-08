@@ -1,7 +1,7 @@
 package frame
 
 import (
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 // optioncontext is context passed into each option function

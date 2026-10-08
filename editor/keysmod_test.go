@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 func TestParseModifiedSpecialKeys(t *testing.T) {

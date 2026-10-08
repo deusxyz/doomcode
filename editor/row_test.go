@@ -16,11 +16,11 @@ import (
 
 	"9fans.net/go/plan9"
 	"9fans.net/go/plan9/client"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/edwoodtest"
 )
 
 const gopherEdwoodDir = "/home/gopher/go/src/edwood"

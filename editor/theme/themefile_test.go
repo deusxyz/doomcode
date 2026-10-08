@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 func TestParseColor(t *testing.T) {

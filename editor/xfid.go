@@ -10,10 +10,10 @@ import (
 	"unicode/utf8"
 
 	"9fans.net/go/plan9"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/ninep"
-	"github.com/rjkroege/edwood/runes"
-	"github.com/rjkroege/edwood/util"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/ninep"
+	"github.com/deusxyz/doomcode/editor/runes"
+	"github.com/deusxyz/doomcode/editor/util"
 )
 
 const Ctlsize = 5 * 12

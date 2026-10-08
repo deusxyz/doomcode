@@ -4,7 +4,7 @@ import (
 	"image"
 	"log"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 // InitTick initialises the tick image for the frame.

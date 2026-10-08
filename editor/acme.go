@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"9fans.net/go/plumb"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 var (

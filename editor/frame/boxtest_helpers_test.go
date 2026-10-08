@@ -6,8 +6,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 )
 
 const fixedwidth = 10

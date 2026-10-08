@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"9fans.net/go/plumb"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/runes"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/runes"
 )
 
 func TestExpand(t *testing.T) {

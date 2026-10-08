@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/file"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/file"
 )
 
 // Test for https://github.com/rjkroege/edwood/issues/291

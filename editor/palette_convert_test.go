@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 // TestPaletteConvertRoundtrip checks that every built-in palette survives a

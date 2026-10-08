@@ -10,11 +10,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/edwoodtest"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 // configureGlobals setups global variables so that Edwood can operate on

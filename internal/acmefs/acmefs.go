@@ -5,6 +5,9 @@ package acmefs
 
 import (
 	"fmt"
+	"io"
+	"strconv"
+	"strings"
 	"sync"
 
 	"9fans.net/go/plan9"
@@ -61,4 +64,24 @@ func WriteStyle(f *client.Fid, st string) error {
 		st = st[n:]
 	}
 	return nil
+}
+
+// BodyRunes returns the length in runes of window id's body, the third
+// field of its ctl line.
+func BodyRunes(id int) (int, error) {
+	f, err := OpenWinFile(id, "ctl", plan9.OREAD)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	buf := make([]byte, 256)
+	n, err := f.ReadAt(buf, 0)
+	if err != nil && err != io.EOF {
+		return 0, err
+	}
+	fields := strings.Fields(string(buf[:n]))
+	if len(fields) < 3 {
+		return 0, fmt.Errorf("window %d: short ctl line %q", id, buf[:n])
+	}
+	return strconv.Atoi(fields[2])
 }

@@ -3,8 +3,8 @@ package main
 import (
 	"image"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/frame"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 // MockFrame is a mock implementation of a frame.Frame that does nothing.

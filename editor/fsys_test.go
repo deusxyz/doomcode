@@ -16,9 +16,9 @@ import (
 	"9fans.net/go/acme"
 	"9fans.net/go/plan9"
 	"9fans.net/go/plan9/client"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/ninep"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/edwoodtest"
-	"github.com/rjkroege/edwood/ninep"
 )
 
 func TestMain(m *testing.M) {

@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/frame"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/frame"
 )
 
 func emptyText() *Text {

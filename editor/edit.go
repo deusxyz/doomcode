@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 var (

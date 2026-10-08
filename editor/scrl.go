@@ -5,7 +5,7 @@ import (
 	"image"
 	"time"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 var scrtmp draw.Image

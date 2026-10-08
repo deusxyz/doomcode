@@ -4,7 +4,7 @@ import (
 	"image"
 	"testing"
 
-	"github.com/rjkroege/edwood/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 )
 
 func TestStylesResolve(t *testing.T) {

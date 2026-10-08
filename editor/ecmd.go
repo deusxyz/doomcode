@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/util"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/util"
 )
 
 var (

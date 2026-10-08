@@ -3,7 +3,7 @@ package edwoodtest
 import (
 	"fmt"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 func NiceColourName(num draw.Color) string {

@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 var tmpl *template.Template

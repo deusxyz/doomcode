@@ -13,12 +13,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/rjkroege/edwood/complete"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/draw/drawutil"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/frame"
-	"github.com/rjkroege/edwood/runes"
+	"github.com/deusxyz/doomcode/editor/complete"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/draw/drawutil"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/frame"
+	"github.com/deusxyz/doomcode/editor/runes"
 )
 
 const (

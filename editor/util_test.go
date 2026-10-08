@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/dumpfile"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/rjkroege/edwood/dumpfile"
 )
 
 // Given the complexity of errorwin1Name, one might wonder why we test

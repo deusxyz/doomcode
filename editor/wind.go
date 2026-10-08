@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 type Window struct {

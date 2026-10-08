@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/rjkroege/edwood/regexp"
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/regexp"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 // TODO(rjk): Regexps should stream. We need a forward/back Rune streaming interface.

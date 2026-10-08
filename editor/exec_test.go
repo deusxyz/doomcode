@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/file"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/edwoodtest"
-	"github.com/rjkroege/edwood/file"
 )
 
 func acmeTestingMain() {

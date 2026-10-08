@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 func TestAddr(t *testing.T) {

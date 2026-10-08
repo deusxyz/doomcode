@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rjkroege/edwood/edwoodtest"
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 func TestSetTag1(t *testing.T) {

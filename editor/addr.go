@@ -3,7 +3,7 @@ package main
 import (
 	"strings"
 
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 // These constants indicates the direction of regular expresssion search.

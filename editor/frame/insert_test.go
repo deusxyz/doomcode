@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/edwoodtest"
 )
 
 type InsertTestResult struct {

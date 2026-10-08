@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"9fans.net/go/acme"
-	"justcode/internal/acmefs"
+	"github.com/deusxyz/doomcode/internal/acmefs"
 )
 
 var (

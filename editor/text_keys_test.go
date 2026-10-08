@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/dumpfile"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
 )
 
 // makeKeyTestBody builds a single window whose body holds buf with the

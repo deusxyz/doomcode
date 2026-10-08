@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 // The ObservableEditableBuffer is used by the main program to add,

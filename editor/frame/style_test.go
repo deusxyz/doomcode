@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/edwoodtest"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/edwoodtest"
 )
 
 func boxSummary(f *frameimpl) []string {

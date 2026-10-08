@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"9fans.net/go/plumb"
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/frame"
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/frame"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 // TODO(rjk): Document what each of these are.

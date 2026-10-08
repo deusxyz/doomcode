@@ -1,7 +1,7 @@
 package frame
 
 import (
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 // StyleColours is how a style index is painted. A nil Text or Back means

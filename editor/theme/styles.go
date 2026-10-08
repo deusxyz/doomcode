@@ -4,8 +4,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/frame"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 // A StyleSpec says how a named text style is painted on top of a

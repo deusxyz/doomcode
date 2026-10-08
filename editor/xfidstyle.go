@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"9fans.net/go/plan9"
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 // The style and changes files of a window directory.

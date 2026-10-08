@@ -13,8 +13,8 @@ import (
 	"9fans.net/go/plan9"
 	"9fans.net/go/plan9/client"
 	"9fans.net/go/plumb"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/util"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/util"
 )
 
 var (

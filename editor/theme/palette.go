@@ -3,8 +3,8 @@ package theme
 import (
 	"image"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/frame"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 // ColorSpec describes a single colour entry.

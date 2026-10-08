@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/rjkroege/edwood/runes"
-	"github.com/rjkroege/edwood/util"
+	"github.com/deusxyz/doomcode/editor/runes"
+	"github.com/deusxyz/doomcode/editor/util"
 )
 
 var (

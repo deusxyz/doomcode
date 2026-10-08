@@ -4,8 +4,8 @@ import (
 	"image"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/draw"
 	"github.com/google/go-cmp/cmp"
-	"github.com/rjkroege/edwood/draw"
 )
 
 // selectSingleCharacterAtLineEnd selects 'b', the last character of "0ab",

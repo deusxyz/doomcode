@@ -11,9 +11,9 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/dumpfile"
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/dumpfile"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 const RowTag = "Newcol Kill Putall Dump Exit"

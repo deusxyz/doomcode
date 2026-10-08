@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"9fans.net/go/plan9"
-	"github.com/rjkroege/edwood/file"
+	"github.com/deusxyz/doomcode/editor/file"
 )
 
 func TestParseStyleWrite(t *testing.T) {

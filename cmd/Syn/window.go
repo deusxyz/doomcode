@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"9fans.net/go/acme"
-	"justcode/internal/acmefs"
+	"github.com/deusxyz/doomcode/internal/acmefs"
 )
 
 // A worker keeps one window's style file in step with its body: it
@@ -24,12 +24,9 @@ func newWorker(id int, lang *Language) *worker {
 }
 
 // bodyRunes reads the body length in runes from the window's ctl line.
-func bodyRunes(w *acme.Win) (int, bool) {
-	info, err := w.Info()
-	if err != nil {
-		return 0, false
-	}
-	return info.BodyLen, true
+func bodyRunes(id int) (int, bool) {
+	n, err := acmefs.BodyRunes(id)
+	return n, err == nil
 }
 
 func (wk *worker) run() {
@@ -157,7 +154,7 @@ func (wk *worker) run() {
 			timer = nil
 			if needResync == "" && doc.edits >= 200 {
 				// Cheap consistency check now and then: the body length.
-				if n, ok := bodyRunes(w); ok && n != doc.Runes() {
+				if n, ok := bodyRunes(wk.id); ok && n != doc.Runes() {
 					needResync = "length mismatch"
 				}
 				doc.edits = 0

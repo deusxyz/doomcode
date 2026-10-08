@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/deusxyz/doomcode/editor/dumpfile"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/rjkroege/edwood/dumpfile"
 )
 
 func changeFileName(t *testing.T, g *globals, ffn, _ string) {

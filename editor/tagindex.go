@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/runes"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/runes"
 	//	"log"
 )
 

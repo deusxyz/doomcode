@@ -4,7 +4,7 @@ import (
 	"image"
 	"strconv"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 // The Ctrl-B prefix, in the manner of tmux: Ctrl-B followed by one key runs

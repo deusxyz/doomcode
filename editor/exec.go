@@ -17,8 +17,8 @@ import (
 
 	"9fans.net/go/plan9"
 	"9fans.net/go/plan9/client"
-	"github.com/rjkroege/edwood/file"
-	"github.com/rjkroege/edwood/frame"
+	"github.com/deusxyz/doomcode/editor/file"
+	"github.com/deusxyz/doomcode/editor/frame"
 )
 
 type Exectab struct {

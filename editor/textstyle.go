@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/rjkroege/edwood/draw"
-	"github.com/rjkroege/edwood/frame"
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/draw"
+	"github.com/deusxyz/doomcode/editor/frame"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 // Styles on screen: the body's file.StyleTable names spans, the theme's

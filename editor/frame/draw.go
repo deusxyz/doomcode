@@ -3,7 +3,7 @@ package frame
 import (
 	"image"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 // drawtext draws every box of f starting at pt, in the colours of each

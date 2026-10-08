@@ -3,7 +3,7 @@ package frame
 import (
 	"image"
 
-	"github.com/rjkroege/edwood/draw"
+	"github.com/deusxyz/doomcode/editor/draw"
 )
 
 func (f *frameimpl) GetSelectionExtent() (int, int) {

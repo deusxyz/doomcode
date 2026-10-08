@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/rjkroege/edwood/theme"
+	"github.com/deusxyz/doomcode/editor/theme"
 )
 
 // The theme file: $EDWOOD_THEME, else $XDG_CONFIG_HOME/edwood/theme, else

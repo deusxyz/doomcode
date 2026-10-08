@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rjkroege/edwood/sam"
+	"github.com/deusxyz/doomcode/editor/sam"
 )
 
 func TestRegexpForward(t *testing.T) {
