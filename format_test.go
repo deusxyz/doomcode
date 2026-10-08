@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -78,5 +79,40 @@ func TestFormatBodyAndPut(t *testing.T) {
 	b, _ = os.ReadFile(name)
 	if string(b) != "zyXHELLO\nWORLD\n" {
 		t.Errorf("file after Put with put off: %q", b)
+	}
+}
+
+func TestFormatterErrorNamesTheFile(t *testing.T) {
+	text := makeKeyTestBody("x\n", 0, 0)
+	name := "/tmp/a.go"
+	text.w.body.file.SetName(name)
+	warnings = nil
+	defer func() { warnings = nil }()
+	bad := []string{"sh", "-c", "echo '<standard input>:2:1: expected declaration' >&2; echo '<stdin>:3: other' >&2; exit 2"}
+	if text.w.formatBody(bad) {
+		t.Fatal("a failing formatter changed the body")
+	}
+	var got string
+	for _, w := range warnings {
+		got += w.buf.String()
+	}
+	for _, want := range []string{
+		"Fmt: " + name + ": sh failed; text left unchanged\n",
+		name + ":2:1: expected declaration\n",
+		name + ":3: other\n",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("warning lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "standard input") || strings.Contains(got, "exit status") {
+		t.Errorf("warning still names stdin or the exit status:\n%s", got)
+	}
+
+	// A formatter that cannot start says why.
+	warnings = nil
+	text.w.formatBody([]string{"/nonexistent/fmt"})
+	if len(warnings) == 0 || !strings.Contains(warnings[0].buf.String(), "failed: ") {
+		t.Errorf("missing reason for a formatter that did not start: %v", warnings)
 	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os/exec"
 	"strings"
 	"time"
@@ -41,18 +42,44 @@ func (w *Window) formatBody(argv []string) bool {
 	name := w.body.file.Name()
 	src := w.body.file.String()
 	out, stderr, err := runFormatter(argv, w.body.DirName(""), src)
+	stderr = formatterMessages(stderr, name)
 	if err != nil {
-		warning(nil, "Fmt: %s: %s: %v\n%s", name, strings.Join(argv, " "), err, stderr)
+		why := "failed"
+		var ee *exec.ExitError
+		if !errors.As(err, &ee) {
+			why = "failed: " + err.Error() // not started, or timed out
+		}
+		warning(nil, "Fmt: %s: %s %s; text left unchanged\n%s", name, argv[0], why, stderr)
 		return false
 	}
 	if stderr != "" {
-		warning(nil, "Fmt: %s: %s", name, stderr)
+		warning(nil, "Fmt: %s: %s\n%s", name, argv[0], stderr)
 	}
 	if out == src {
 		return false
 	}
 	w.body.replaceAll(out)
 	return true
+}
+
+// stdinNames are what formatters call their standard input in messages:
+// gofmt says "<standard input>", rustfmt and clang-format "<stdin>".
+var stdinNames = []string{"<standard input>", "<stdin>"}
+
+// formatterMessages puts the file name where the formatter's messages
+// name its standard input, so that "path:39:1: …" in +Errors can be
+// opened with button 3 or ^O, and ends the text with a newline.
+func formatterMessages(stderr, name string) string {
+	if stderr == "" {
+		return ""
+	}
+	for _, s := range stdinNames {
+		stderr = strings.ReplaceAll(stderr, s, name)
+	}
+	if !strings.HasSuffix(stderr, "\n") {
+		stderr += "\n"
+	}
+	return stderr
 }
 
 // replaceAll makes the text s, touching only the span between the common
