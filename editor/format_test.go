@@ -2,10 +2,25 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
+
+// needUnixTools skips tests that run sh, tr and false as formatters.
+func needUnixTools(t *testing.T) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("formatter tests run Unix tools")
+	}
+	for _, tool := range []string{"sh", "tr", "false"} {
+		if _, err := exec.LookPath(tool); err != nil {
+			t.Skipf("no %s: %v", tool, err)
+		}
+	}
+}
 
 func TestReplaceAllKeepsSelection(t *testing.T) {
 	// Change in the middle: selection before it stays, after it shifts.
@@ -31,6 +46,7 @@ func TestReplaceAllKeepsSelection(t *testing.T) {
 }
 
 func TestFormatBodyAndPut(t *testing.T) {
+	needUnixTools(t)
 	dir := t.TempDir()
 	name := filepath.Join(dir, "shout.txt")
 	text := makeKeyTestBody("hello\nworld\n", 6, 11) // "world"
@@ -83,6 +99,7 @@ func TestFormatBodyAndPut(t *testing.T) {
 }
 
 func TestFormatterErrorNamesTheFile(t *testing.T) {
+	needUnixTools(t)
 	text := makeKeyTestBody("x\n", 0, 0)
 	name := "/tmp/a.go"
 	text.w.body.file.SetName(name)
@@ -125,6 +142,7 @@ func TestExpandFmtArgs(t *testing.T) {
 	}
 
 	// The formatter sees the path.
+	needUnixTools(t)
 	text := makeKeyTestBody("x\n", 0, 0)
 	text.w.body.file.SetName("/tmp/b.ts")
 	if !text.w.formatBody([]string{"sh", "-c", `cat; echo "$0"`, "%f"}) {
